@@ -63,6 +63,16 @@ void wiegandRead()
 			Serial.println(uid);
 #endif
 
+			DynamicJsonDocument root(512);
+			root["cmd"] = "log";
+			root["uid"] = uid;
+			root["time"] = epoch;
+			root["doorName"] = config.doorName[0];
+			root["type"] = "cardswipe";
+			root["hostname"] = config.deviceHostname;
+			root["doorip"] = WiFi.localIP().toString();
+			mqttPublishEvent(&root);
+
 			File f = SPIFFS.open("/P/" + uid, "r");
 			// user exists, we should wait for pincode
 			if (f)
@@ -254,18 +264,23 @@ void rfidRead()
 	}
 }
 
+String translateKeyPress(unsigned long originalKeyPress) {
+	switch (originalKeyPress) {
+		case WIEGAND_ENT:
+			return String('#');
+		case WIEGAND_ESC:
+			return String('*');
+		default:
+			return String(originalKeyPress);
+	}
+}
 
 /*
  *  Try and read a PIN code from Wiegand hardware
  */
 void pinCodeRead()
 {
-	if (config.readertype != READER_WIEGAND ||
-			!wiegandAvailable ||
-			(!config.pinCodeRequested && rfidState == cardSwiped) ||
-			(!config.pinCodeOnly && rfidState == waitingRfid) ||
-			rfidState == pinCodeEntered)
-	{
+	if (config.readertype != READER_WIEGAND || !wiegandAvailable) {
 		return;
 	}
 
@@ -276,6 +291,16 @@ void pinCodeRead()
 	// readers use this as special admin code and would hence require *#PIN#
 	if (wg.getWiegandType() == WIEGANDTYPE_KEYPRESS4 || wg.getWiegandType() == WIEGANDTYPE_KEYPRESS8)
 	{
+		DynamicJsonDocument root(512);
+		root["cmd"] = "log";
+		root["time"] = epoch;
+		root["doorName"] = config.doorName[0];
+		root["type"] = "keypress";
+		root["key"] = translateKeyPress(wg.getCode());
+		root["hostname"] = config.deviceHostname;
+		root["doorip"] = WiFi.localIP().toString();
+		mqttPublishEvent(&root);
+
 		if (wg.getCode() != WIEGAND_ENT && wg.getCode() != WIEGAND_ESC) // normal key entry, add to currentInput
 		{
 #ifdef DEBUG
@@ -298,11 +323,23 @@ void pinCodeRead()
 			if(wg.getCode() == WIEGAND_ENT) // enter, process pincode
 			{
 				pinCode = currentInput;
+
+				DynamicJsonDocument root(512);
+				root["cmd"] = "log";
+				root["uid"] = uid == "" ? lastUid : uid;
+				root["time"] = epoch;
+				root["doorName"] = config.doorName[0];
+				root["type"] = "pincodeentered";
+				root["pincode"] = pinCode;
+				root["hostname"] = config.deviceHostname;
+				root["doorip"] = WiFi.localIP().toString();
+				mqttPublishEvent(&root);
+
 				if (config.pinCodeOnly && rfidState == waitingRfid)
 				{
 					uid = pinCode;
 					rfidState = cardSwiped;
-				} else
+				} else if (rfidState == cardSwiped)
 				{
 					rfidState = pinCodeEntered;
 				}
