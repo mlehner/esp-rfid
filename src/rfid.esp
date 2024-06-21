@@ -4,6 +4,7 @@ String currentInput = "";
 String pinCode = "";
 String type = "";
 String uid = "";
+String lastUid = "";
 String v1uid = "";
 String username = "";
 bool wiegandAvailable = false;
@@ -310,6 +311,8 @@ void pinCodeRead()
 				Serial.print(F("[ INFO ] PICC's pin code: "));
 				Serial.println(currentInput);
 #endif
+				// reset lastUid since a PIN was entered
+				lastUid = "";
 				currentInput = "";
 				keyTimer = 0;
 				cooldown = millis() + COOLDOWN_MILIS;
@@ -582,6 +585,7 @@ void cleanRfidLoop()
 		keyTimer = 0;
 		currentInput = "";
 		type = "";
+		lastUid = uid;
 		uid = "";
 		v1uid = "";
 		rfidState = waitingRfid;
