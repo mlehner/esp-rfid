@@ -75,7 +75,7 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
 
 void mqttPublishEvent(JsonDocument *root, String topic)
 {
-	if (config.mqttEnabled && mqttClient.connected())
+	if (config.mqttEnabled)
 	{
 		String stopic(config.mqttTopic);
 		stopic = stopic + "/" + topic;
