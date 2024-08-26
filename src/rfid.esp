@@ -8,6 +8,7 @@ String lastUid = "";
 String v1uid = "";
 String username = "";
 bool wiegandAvailable = false;
+unsigned long cardReadCooldown = 0;
 
 #define WIEGAND_ENT 0xD
 #define WIEGAND_ESC 0x1B
@@ -58,6 +59,8 @@ void wiegandRead()
 		{
 			uid = String(wg.getCode(), config.wiegandReadHex ? HEX : DEC);
 			type = String(wg.getWiegandType(), DEC);
+
+			cardReadCooldown = millis() + COOLDOWN_MILIS;
 #ifdef DEBUG
 			Serial.print(F("[ INFO ] PICC's UID: "));
 			Serial.println(uid);
@@ -106,7 +109,6 @@ void wiegandRead()
 				}
 			} else
 			{
-				cooldown = millis() + COOLDOWN_MILIS;
 				rfidState = waitingRfid;
 				processingState = unknown;
 			}
@@ -121,7 +123,7 @@ void mfrc522Read()
 		return;
 	}
 	mfrc522.PICC_HaltA();
-	cooldown = millis() + COOLDOWN_MILIS;
+	cardReadCooldown = millis() + COOLDOWN_MILIS;
 
 	/*
 	 *  Convert RC522 UID into string
@@ -170,7 +172,7 @@ void pn532Read()
 #ifdef DEBUG
 		Serial.print(uid);
 #endif
-		cooldown = millis() + COOLDOWN_MILIS;
+		cardReadCooldown = millis() + COOLDOWN_MILIS;
 	}
 }
 
@@ -193,7 +195,7 @@ void genericRead()
 		uid = RFIDr.GetHexID();
 		type = RFIDr.GetTagType();
 		rfidState = cardSwiped;
-		cooldown = millis() + COOLDOWN_MILIS;
+		cardReadCooldown = millis() + COOLDOWN_MILIS;
 #ifdef DEBUG
 		Serial.print(F("[ INFO ] PICC's UID: "));
 		Serial.print(uid);
@@ -318,7 +320,7 @@ void pinCodeRead()
 #endif
 				rfidState = waitingRfid;
 				processingState = cancelled;
-				cooldown = millis() + COOLDOWN_MILIS;
+				cardReadCooldown = millis() + COOLDOWN_MILIS;
 			}
 			if(wg.getCode() == WIEGAND_ENT) // enter, process pincode
 			{
@@ -352,7 +354,7 @@ void pinCodeRead()
 				lastUid = "";
 				currentInput = "";
 				keyTimer = 0;
-				cooldown = millis() + COOLDOWN_MILIS;
+				cardReadCooldown = millis() + COOLDOWN_MILIS;
 			}
 		}
 	}
@@ -634,7 +636,12 @@ void cleanRfidLoop()
 void rfidLoop()
 {
 	rfidPrepareRead();
-	rfidRead();
+
+	// check if cooldown has expired and we should read new card data
+	if (millis() >= cardReadCooldown) {
+		rfidRead();
+	}
+
 	pinCodeRead();
 	rfidProcess();
 	rfidOutsideMessaging();

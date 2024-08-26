@@ -82,7 +82,6 @@ AsyncWebSocket ws("/ws");
 #define BEEPERon LOW
 
 // Variables for whole scope
-unsigned long cooldown = 0;
 unsigned long currentMillis = 0;
 unsigned long deltaTime = 0;
 bool doEnableWifi = false;
@@ -197,10 +196,7 @@ void ICACHE_RAM_ATTR loop()
 	doorStatus();
 	doorbellStatus();
 
-	if (currentMillis >= cooldown)
-	{
-		rfidLoop();
-	}
+	rfidLoop();
 
 	for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
 	{
