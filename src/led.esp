@@ -16,7 +16,7 @@ void ledWaitingOff()
 {
 	if (config.ledwaitingpin != 255)
 	{
-		digitalWrite(config.ledwaitingpin, HIGH);
+		digitalWrite(config.ledwaitingpin, LEDoff);
 #ifdef DEBUG
 		Serial.println("LED waiting OFF");
 #endif
