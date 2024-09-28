@@ -47,6 +47,7 @@ var config = {
         "openlockpin": 255,
         "doorbellpin": 255,
         "accessdeniedpin": 255,
+        "accessgrantedpin": 255,
         "useridstoragemode": "hexadecimal",
         "requirepincodeafterrfid": 1,
         "allowpincodeonly": 0,
@@ -188,6 +189,7 @@ function listhardware() {
   document.getElementById("doorbellpin").value = config.hardware.doorbellpin;
   document.getElementById("openlockpin").value = config.hardware.openlockpin;
   document.getElementById("accessdeniedpin").value = config.hardware.accessdeniedpin;
+  document.getElementById("accessgrantedpin").value = config.hardware.accessgrantedpin;
   document.getElementById("useridstoragemode").value = config.hardware.useridstoragemode;
   document.getElementById("requirepincodeafterrfid").checked = config.hardware.requirepincodeafterrfid;
   document.getElementById("allowpincodeonly").checked = config.hardware.allowpincodeonly;
@@ -265,6 +267,7 @@ function savehardware() {
   config.hardware.doorbellpin = parseInt(document.getElementById("doorbellpin").value);
   config.hardware.openlockpin = parseInt(document.getElementById("openlockpin").value);
   config.hardware.accessdeniedpin = parseInt(document.getElementById("accessdeniedpin").value);
+  config.hardware.accessgrantedpin = parseInt(document.getElementById("accessgrantedpin").value);
   config.hardware.beeperpin = parseInt(document.getElementById("beeperpin").value);
   config.hardware.ledwaitingpin = parseInt(document.getElementById("ledwaitingpin").value);
   config.hardware.doorname = document.getElementById("doorname").value;
@@ -1523,6 +1526,7 @@ function socketMessageListener(evt) {
         if (!('maxOpenDoorTime' in config.hardware)) config.hardware.maxOpenDoorTime = 0;
         if (!('doorbellpin' in config.hardware)) config.hardware.doorbellpin = 255;
         if (!('accessdeniedpin' in config.hardware)) config.hardware.accessdeniedpin = 255;
+        if (!('accessgrantedpin' in config.hardware)) config.hardware.accessgrantedpin = 255;
         if (!('openlockpin' in config.hardware)) config.hardware.openlockpin = 255;
         if (!('beeperpin' in config.hardware)) config.hardware.beeperpin = 255;
         if (!('ledwaitingpin' in config.hardware)) config.hardware.ledwaitingpin = 255;

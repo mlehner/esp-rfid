@@ -1,6 +1,7 @@
 struct Config {
     int relayPin[MAX_NUM_RELAYS];
     uint8_t accessdeniedpin = 255;
+    uint8_t accessgrantedpin = 255;
     bool accessPointMode = false;
     IPAddress accessPointIp;
     IPAddress accessPointSubnetIp;

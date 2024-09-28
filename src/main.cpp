@@ -187,11 +187,13 @@ void ICACHE_RAM_ATTR loop()
 		mqttPublishAccess(epoch, "true", "Always", "Button", " ");
 		activateRelay[0] = true;
 		beeperValidAccess();
+		ledAccessGrantedOn();
 		// TODO: handle other relays
 	}
 
 	ledWifiStatus();
 	ledAccessDeniedOff();
+	ledAccessGrantedOff();
 	beeperBeep();
 	doorStatus();
 	doorbellStatus();

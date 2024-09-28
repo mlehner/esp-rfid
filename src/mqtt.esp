@@ -522,6 +522,8 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		Serial.println("[ INFO ] Door open");
 #endif
 		writeLatest(" ", "MQTT", 1);
+		beeperValidAccess();
+		ledAccessGrantedOn();
 		mqttPublishAccess(epoch, "true", "Always", "MQTT", " ");
 		for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
 		{
@@ -536,6 +538,8 @@ void processMqttMessage(MqttMessage *incomingMessage)
 #endif
 		writeLatest(" ", "MQTT", 1);
 		mqttPublishAccess(epoch, "true", "Always", "MQTT", " ");
+		beeperValidAccess();
+		ledAccessGrantedOn();
 		const char *door = incomingMessage->door;
 		String stringDoor = String(door);
 		int currentRelay = stringDoor.toInt();

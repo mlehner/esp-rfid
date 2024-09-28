@@ -70,7 +70,17 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		if (config.accessdeniedpin != 255)
 		{
 			pinMode(config.accessdeniedpin, OUTPUT);
-			digitalWrite(config.accessdeniedpin, LOW);
+			digitalWrite(config.accessdeniedpin, LEDoff);
+		}
+	}
+
+	if (hardware.containsKey("accessgrantedpin"))
+	{
+		config.accessgrantedpin = hardware["accessgrantedpin"];
+		if (config.accessgrantedpin != 255)
+		{
+			pinMode(config.accessgrantedpin, OUTPUT);
+			digitalWrite(config.accessgrantedpin, LEDoff);
 		}
 	}
 

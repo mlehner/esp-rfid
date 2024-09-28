@@ -530,6 +530,7 @@ void rfidOutsideMessaging()
 			mqttPublishAccess(epoch, "true", accountTypes, username, uid);
 		}
 		beeperValidAccess();
+		ledAccessGrantedOn();
 	}
 	if (processingState == validAdmin)
 	{
@@ -543,6 +544,7 @@ void rfidOutsideMessaging()
 			mqttPublishAccess(epoch, "true", accountTypes, username, uid);
 		}
 		beeperAdminAccess();
+		ledAccessGrantedOn();
 	}
 	if (processingState == expired)
 	{

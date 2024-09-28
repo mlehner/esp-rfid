@@ -1,4 +1,5 @@
 unsigned long accessdeniedOffTime = 0;
+unsigned long accessgrantedOffTime = 0;
 
 void ledWaitingOn()
 {
@@ -62,6 +63,29 @@ void ledWifiStatus()
 			if (!(digitalRead(config.wifipin) == LEDon))
 				digitalWrite(config.wifipin, LEDon);
 		}
+	}
+}
+
+void ledAccessGrantedOff()
+{
+	if (config.accessgrantedpin != 255 && currentMillis > accessgrantedOffTime && digitalRead(config.accessgrantedpin) == LEDon)
+	{
+		digitalWrite(config.accessgrantedpin, LEDoff);
+#ifdef DEBUG
+		Serial.println("LED access granted OFF");
+#endif
+	}
+}
+
+void ledAccessGrantedOn()
+{
+	if (config.accessgrantedpin != 255)
+	{
+		accessgrantedOffTime = currentMillis + 2000;
+		digitalWrite(config.accessgrantedpin, LEDon);
+#ifdef DEBUG
+		Serial.println("LED access granted ON");
+#endif
 	}
 }
 
