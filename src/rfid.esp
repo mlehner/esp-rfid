@@ -642,7 +642,7 @@ void cleanRfidLoop()
 		keyTimer = 0;
 		currentInput = "";
 		type = "";
-		lastUid = uid;
+		lastUid = "";
 		uid = "";
 		v1uid = "";
 		rfidState = waitingRfid;
