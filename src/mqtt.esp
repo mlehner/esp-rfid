@@ -537,17 +537,26 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		Serial.println("[ INFO ] Door open");
 #endif
 		writeLatest(" ", "MQTT", 1);
-		mqttPublishAccess(epoch, "true", "Always", "MQTT", " ");
-		beeperValidAccess();
-		ledAccessGrantedOn();
 		const char *door = incomingMessage->door;
-		String stringDoor = String(door);
-		int currentRelay = stringDoor.toInt();
-		if (digitalRead(config.relayPin[currentRelay]) == !config.relayType[currentRelay])
-		{
-			activateRelay[currentRelay] = true;
-		}
-		previousMillis = millis();
+
+		remoteValidAccess(String(door).toInt(), "MQTT", " ");
+	}
+	else if (strcmp(command, "accessgranted") == 0)
+	{
+		const char *door = incomingMessage->door;
+		const char *username = incomingMessage->user;
+		const char *uid = incomingMessage->uid;
+
+		// @TODO support multiple "doors"/relays
+		remoteValidAccess(String(door).toInt(), username, uid);
+	}
+	else if (strcmp(command, "accessdenied") == 0)
+	{
+		const char *username = incomingMessage->user;
+		const char *uid = incomingMessage->uid;
+
+		// @TODO support other states: wrongPincode, expired, unknown
+		remoteInvalidAccess(username, uid);
 	}
 	else if (strcmp(command, "close") == 0)
 	{

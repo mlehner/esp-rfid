@@ -104,6 +104,10 @@ unsigned long uptimeSeconds = 0;
 unsigned long wifiPinBlink = millis();
 unsigned long wiFiUptimeMillis = 0;
 
+// rfid.h
+void remoteValidAccess(int doorNumber, const char *newUsername, const char *newUid);
+void remoteInvalidAccess(const char *newUsername, const char *newUid);
+
 #include "led.esp"
 #include "beeper.esp"
 #include "log.esp"

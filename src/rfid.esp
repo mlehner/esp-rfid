@@ -35,6 +35,25 @@ enum RfidProcessingStates
 RfidStates rfidState = waitingRfid;
 RfidProcessingStates processingState = waitingProcessing;
 
+void remoteValidAccess(int doorNumber, const char *newUsername, const char *newUid)
+{
+	username = String(newUsername);
+	uid = String(newUid);
+	processingState = valid;
+
+	if (digitalRead(config.relayPin[doorNumber]) == !config.relayType[doorNumber]) {
+		activateRelay[doorNumber] = true;
+	}
+	previousMillis = millis();
+}
+
+void remoteInvalidAccess(const char *newUsername, const char *newUid)
+{
+	username = String(newUsername);
+	uid = String(newUid);
+	processingState = notValid;
+}
+
 void loadWiegandData()
 {
 	wiegandAvailable = false;
