@@ -76,6 +76,13 @@ void wiegandRead()
 			root["doorip"] = WiFi.localIP().toString();
 			mqttPublishEvent(&root);
 
+#ifndef LOCAL_DATABASE
+			// always wait for keypad
+			// remote will reset state if pin is not required
+			rfidState = cardSwiped;
+			keyTimer = millis();
+			ledWaitingOn();
+#else
 			File f = SPIFFS.open("/P/" + uid, "r");
 			// user exists, we should wait for pincode
 			if (f)
@@ -112,6 +119,7 @@ void wiegandRead()
 				rfidState = waitingRfid;
 				processingState = unknown;
 			}
+#endif
 		}
 	}
 }
@@ -645,7 +653,10 @@ void rfidLoop()
 	}
 
 	pinCodeRead();
+#ifdef LOCAL_DATABASE
 	rfidProcess();
+#endif
+
 	rfidOutsideMessaging();
 	cleanRfidLoop();
 }
