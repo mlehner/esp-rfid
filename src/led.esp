@@ -68,8 +68,9 @@ void ledWifiStatus()
 
 void ledAccessGrantedOff()
 {
-	if (config.accessgrantedpin != 255 && currentMillis > accessgrantedOffTime && digitalRead(config.accessgrantedpin) == LEDon)
+	if (config.accessgrantedpin != 255 && accessgrantedOffTime > 0 && currentMillis > accessgrantedOffTime && digitalRead(config.accessgrantedpin) == LEDon)
 	{
+		accessgrantedOffTime = 0;
 		digitalWrite(config.accessgrantedpin, LEDoff);
 #ifdef DEBUG
 		Serial.println("LED access granted OFF");
@@ -91,8 +92,9 @@ void ledAccessGrantedOn()
 
 void ledAccessDeniedOff()
 {
-	if (config.accessdeniedpin != 255 && currentMillis > accessdeniedOffTime && digitalRead(config.accessdeniedpin) == LEDon)
+	if (config.accessdeniedpin != 255 && accessdeniedOffTime > 0 && currentMillis > accessdeniedOffTime && digitalRead(config.accessdeniedpin) == LEDon)
 	{
+		accessdeniedOffTime = 0;
 		digitalWrite(config.accessdeniedpin, LEDoff);
 #ifdef DEBUG
 		Serial.println("LED access denied OFF");

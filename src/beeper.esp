@@ -36,6 +36,21 @@ void beeperBeep()
 	}
 }
 
+void beeperPinWaiting()
+{
+	if (config.beeperpin == 255)
+	{
+		return;
+	}
+
+	beeperOffTime = currentMillis + 500;
+	beeperInterval = 100;
+	digitalWrite(config.beeperpin, BEEPERon);
+#ifdef DEBUG
+	Serial.println("Beeper Pin Waiting ON");
+#endif
+}
+
 void beeperValidAccess()
 {
 	if (config.beeperpin != 255)
