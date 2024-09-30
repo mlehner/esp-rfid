@@ -28,6 +28,7 @@ enum RfidProcessingStates
 	unknown,
 	valid,
 	validAdmin,
+	timedOut,
 	cancelled
 };
 
@@ -578,6 +579,12 @@ void rfidOutsideMessaging()
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
+	if (processingState == timedOut)
+	{
+		mqttPublishAccess(epoch, "false", "Timed out", username, uid);
+		ledAccessDeniedOn();
+		beeperAccessDenied();
+	}
 	if (processingState == unknown)
 	{
 		String data = String(uid) += " " + String(type);
@@ -626,7 +633,7 @@ void cleanRfidLoop()
 	}
 	// Keep an eye on timeout waitingProcessing for keypress
 	// Clear code and timer when timeout is reached
-	if ((keyTimer > 0 && millis() - keyTimer >= KEYBOARD_TIMEOUT_MILIS) || processingState != waitingProcessing)
+	if (processingState != waitingProcessing)
 	{
 #ifdef DEBUG
 		Serial.println("[ INFO ] Read timeout or clean after read");
@@ -650,12 +657,23 @@ void rfidLoop()
 	// check if cooldown has expired and we should read new card data
 	if (millis() >= cardReadCooldown) {
 		rfidRead();
+
+		// if cooldown has expired, and we are still in pinCodeEntered
+		// then mark this is timed out, remote took too long to respond
+
+		if (rfidState == pinCodeEntered) {
+			processingState = timedOut;
+		}
 	}
 
 	pinCodeRead();
 #ifdef LOCAL_DATABASE
 	rfidProcess();
 #endif
+
+	if ((keyTimer > 0 && millis() - keyTimer >= KEYBOARD_TIMEOUT_MILIS)) {
+		processingState = timedOut;
+	}
 
 	rfidOutsideMessaging();
 	cleanRfidLoop();
