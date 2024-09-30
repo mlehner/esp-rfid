@@ -73,6 +73,7 @@ void wiegandRead()
 			root["time"] = epoch;
 			root["doorName"] = config.doorName[0];
 			root["type"] = "cardswipe";
+			root["cardType"] = type;
 			root["hostname"] = config.deviceHostname;
 			root["doorip"] = WiFi.localIP().toString();
 			mqttPublishEvent(&root);
