@@ -18,8 +18,8 @@ void connectToMqtt()
 	if (!config.mqttEnabled || mqttClient.connected()) {
 		return;
 	}
-#ifdef DEBUG
-	Serial.println("[ INFO ] Connecting MQTT");
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.println("[ INFO ] Connecting MQTT");
 #endif
 	mqttClient.connect();
 }
@@ -29,8 +29,8 @@ void disconnectMqtt()
 	if (!config.mqttEnabled || !mqttClient.connected()) {
 		return;
 	}
-#ifdef DEBUG
-	Serial.println("[ INFO ] Disconnecting MQTT");
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.println("[ INFO ] Disconnecting MQTT");
 #endif
 	mqttClient.disconnect(true);
 }
@@ -82,9 +82,9 @@ void mqttPublishEvent(JsonDocument *root, String topic)
 		String mqttBuffer;
 		serializeJson(*root, mqttBuffer);
 		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
-#ifdef DEBUG
-		Serial.print("[ INFO ] Mqtt Publish:");
-		Serial.println(mqttBuffer);
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.print("[ INFO ] Mqtt Publish:");
+		ESPRFID_DEBUG_PORT.println(mqttBuffer);
 #endif
 	}
 }
@@ -98,9 +98,9 @@ void mqttPublishEventHA(JsonDocument *root, String topic)
 		String mqttBuffer;
 		serializeJson(*root, mqttBuffer);
 		mqttClient.publish(stopic.c_str(), 0, true, mqttBuffer.c_str());
-#ifdef DEBUG
-		Serial.print("[ INFO ] Mqtt Publish:");
-		Serial.println(mqttBuffer);
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.print("[ INFO ] Mqtt Publish:");
+		ESPRFID_DEBUG_PORT.println(mqttBuffer);
 #endif
 	}
 }
@@ -143,7 +143,7 @@ void mqttPublishDiscovery()
 	dev["ids"] = WiFi.macAddress();
 	dev["name"] = config.deviceHostname;
 	dev["mf"] = "esp-rfid";
-	dev["sw"] = VERSION;
+	dev["sw"] = ESPRFID_VERSION;
 	String num;
 	for (int n = 0; n < config.numRelays; n++)
 	{
@@ -246,8 +246,8 @@ void mqttPublishAvty()
 	String avty_topic = mtopic + "/avty";
 	String payloadString = "online";
 	mqttClient.publish(avty_topic.c_str(), 0, true, payloadString.c_str());
-#ifdef DEBUG
-	Serial.println("[ INFO ] Mqtt Publish: online @ " + avty_topic);
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.println("[ INFO ] Mqtt Publish: online @ " + avty_topic);
 #endif
 }
 
@@ -343,9 +343,9 @@ void mqttPublishIo(String const &io, String const &state)
 
 		mqttClient.publish(topic.c_str(), 0, false, state.c_str());
 
-#ifdef DEBUG
-		Serial.print("[ INFO ] Mqtt Publish: ");
-		Serial.println(state + " @ " + topic);
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.print("[ INFO ] Mqtt Publish: ");
+		ESPRFID_DEBUG_PORT.println(state + " @ " + topic);
 #endif
 	}
 }
@@ -360,8 +360,8 @@ void getUserList()
 	DynamicJsonDocument root(512);
 	JsonArray users = root.createNestedArray("list");
 	Dir dir = SPIFFS.openDir("/P/");
-#ifdef DEBUG
-	Serial.println("[ INFO ] getUserList");
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.println("[ INFO ] getUserList");
 #endif
 	while (dir.next())
 	{
@@ -426,9 +426,9 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	} else {
 		return;
 	}
-#ifdef DEBUG
-	Serial.print("[ INFO ] JSON msg: ");
-	Serial.println(mqttBuffer);
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.print("[ INFO ] JSON msg: ");
+	ESPRFID_DEBUG_PORT.println(mqttBuffer);
 #endif
 
 	DynamicJsonDocument mqttIncomingJson(2048);
@@ -436,9 +436,9 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	auto error = deserializeJson(mqttIncomingJson, (const char *)mqttBuffer);
 	if (error)
 	{
-#ifdef DEBUG
-		Serial.print("[ INFO ] Failed parsing MQTT message: ");
-		Serial.println(mqttBuffer);
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.print("[ INFO ] Failed parsing MQTT message: ");
+		ESPRFID_DEBUG_PORT.println(mqttBuffer);
 #endif
 		return;
 	}
@@ -454,19 +454,19 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	String espIp = WiFi.localIP().toString();
 	if (!((strcmp(ipadr, espIp.c_str()) == 0) && (ipadr != NULL)))
 	{
-#ifdef DEBUG
-		Serial.print("[ INFO ] ESP  IP: ");
-		Serial.println(espIp);
-		Serial.print("[ INFO ] recv IP: ");
-		Serial.println(ipadr);
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.print("[ INFO ] ESP  IP: ");
+		ESPRFID_DEBUG_PORT.println(espIp);
+		ESPRFID_DEBUG_PORT.print("[ INFO ] recv IP: ");
+		ESPRFID_DEBUG_PORT.println(ipadr);
 #endif
 		return;
 	}
 
 	if(ESP.getFreeHeap() < 2048)
 	{
-#ifdef DEBUG
-		Serial.println("Dropping MQTT message, out of memory");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("Dropping MQTT message, out of memory");
 #endif
 		writeEvent("ERRO", "mqtt", "Dropping MQTT message, out of memory", "");
 		return;
@@ -476,8 +476,8 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	if (mqttIncomingJson.containsKey("cmd")) {
 		strlcpy(incomingMessage->command, mqttIncomingJson["cmd"], sizeof(incomingMessage->command));
 	} else {
-#ifdef DEBUG
-		Serial.println("[ INFO ] No cmd key in MQTT message");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("[ INFO ] No cmd key in MQTT message");
 #endif
 		return;
 	}
@@ -511,15 +511,15 @@ void processMqttMessage(MqttMessage *incomingMessage)
 	char *command = incomingMessage->command;
 	if (strcmp(command, "getuserlist") == 0)
 	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] Get User List");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("[ INFO ] Get User List");
 #endif
 		getUserList();
 	}
 	else if (strcmp(command, "opendoor") == 0)
 	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] Door open");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("[ INFO ] Door open");
 #endif
 		writeLatest(" ", "MQTT", 1);
 		beeperValidAccess();
@@ -533,8 +533,8 @@ void processMqttMessage(MqttMessage *incomingMessage)
 	}
 	else if (strcmp(command, "open") == 0)
 	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] Door open");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("[ INFO ] Door open");
 #endif
 		writeLatest(" ", "MQTT", 1);
 		const char *door = incomingMessage->door;
@@ -560,8 +560,8 @@ void processMqttMessage(MqttMessage *incomingMessage)
 	}
 	else if (strcmp(command, "close") == 0)
 	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] Door close");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("[ INFO ] Door close");
 #endif
 		writeLatest(" ", "MQTT", 1);
 		mqttPublishAccess(epoch, "true", "Always", "MQTT", " ");
@@ -576,16 +576,16 @@ void processMqttMessage(MqttMessage *incomingMessage)
 	}
 	else if (strcmp(command, "deletusers") == 0)
 	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] Delete all users");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("[ INFO ] Delete all users");
 #endif
 		deleteAllUserFiles();
 		mqttPublishAck(command);
 	}
 	else if (strcmp(command, "deletuid") == 0)
 	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] Delete a single user by uid");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("[ INFO ] Delete a single user by uid");
 #endif
 		const char *uid = incomingMessage->uid;
 		deleteUserID(uid);
@@ -593,10 +593,10 @@ void processMqttMessage(MqttMessage *incomingMessage)
 	}
 	else if (strcmp(command, "adduser") == 0)
 	{
-#ifdef DEBUG
-		Serial.print("[ INFO ] Add Users: ");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.print("[ INFO ] Add Users: ");
 		const char *name = incomingMessage->user;
-		Serial.println(name);
+		ESPRFID_DEBUG_PORT.println(name);
 #endif
 		const char *uid = incomingMessage->uid;
 		String filename = "/P/";
@@ -619,8 +619,8 @@ void processMqttMessage(MqttMessage *incomingMessage)
 	}
 	else if (strcmp(command, "getconf") == 0)
 	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] Get configuration");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("[ INFO ] Get configuration");
 #endif
 		File f = SPIFFS.open("/config.json", "r");
 		char *buf;
@@ -645,15 +645,15 @@ void processMqttMessage(MqttMessage *incomingMessage)
 	}
 	else if (strcmp(command, "updateconf") == 0)
 	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] Update configuration");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("[ INFO ] Update configuration");
 #endif
 		DynamicJsonDocument mqttIncomingJson(2048);
 		auto error = deserializeJson(mqttIncomingJson, incomingMessage->serializedMessage);
 		if (error)
 		{
-#ifdef DEBUG
-			Serial.println("[ INFO ] Failed parsing MQTT message!!!");
+#ifdef ESPRFID_DEBUG
+			ESPRFID_DEBUG_PORT.println("[ INFO ] Failed parsing MQTT message!!!");
 #endif
 			return;
 		}
@@ -673,24 +673,24 @@ void processMqttMessage(MqttMessage *incomingMessage)
 
 void onMqttSubscribe(uint16_t packetId, uint8_t qos)
 {
-#ifdef DEBUG
-	Serial.println("[ INFO ] Subscribe acknowledged.");
-	Serial.print("[ INFO ] packetId: ");
-	Serial.println(packetId);
-	Serial.print("[ INFO ] qos: ");
-	Serial.println(qos);
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.println("[ INFO ] Subscribe acknowledged.");
+	ESPRFID_DEBUG_PORT.print("[ INFO ] packetId: ");
+	ESPRFID_DEBUG_PORT.println(packetId);
+	ESPRFID_DEBUG_PORT.print("[ INFO ] qos: ");
+	ESPRFID_DEBUG_PORT.println(qos);
 #endif
 }
 
 void onMqttConnect(bool sessionPresent)
 {
-#ifdef DEBUG
-	Serial.println("[ INFO ] MQTT Connected session");
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.println("[ INFO ] MQTT Connected session");
 #endif
 	if (sessionPresent == true)
 	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] MQTT session Present: True");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("[ INFO ] MQTT session Present: True");
 #endif
 		writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
 	}
@@ -737,8 +737,8 @@ void setupMqtt()
 		return;
 	}
 
-#ifdef DEBUG
-	Serial.println("[ INFO ] Trying to setup MQTT");
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.println("[ INFO ] Trying to setup MQTT");
 #endif
 	if (config.mqttHA)
 	{

@@ -3,8 +3,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	File configFile = SPIFFS.open("/config.json", "r");
 	if (!configFile)
 	{
-#ifdef DEBUG
-		Serial.println(F("[ WARN ] Failed to open config file"));
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println(F("[ WARN ] Failed to open config file"));
 #endif
 		return false;
 	}
@@ -15,21 +15,21 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	auto error = deserializeJson(json, buf.get(), size);
 	if (error)
 	{
-#ifdef DEBUG
-		Serial.println(F("[ WARN ] Failed to parse config file"));
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println(F("[ WARN ] Failed to parse config file"));
 #endif
 		return false;
 	}
-#ifdef DEBUG
-	Serial.println(F("[ INFO ] Config file found"));
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.println(F("[ INFO ] Config file found"));
 #endif
 	JsonObject network = json["network"];
 	JsonObject hardware = json["hardware"];
 	JsonObject general = json["general"];
 	JsonObject mqtt = json["mqtt"];
 	JsonObject ntp = json["ntp"];
-#ifdef DEBUG
-	Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.println(F("[ INFO ] Trying to setup RFID Hardware"));
 #endif
 	if (hardware.containsKey("wifipin"))
 	{
@@ -352,8 +352,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 			config.mqttHA = mqtt["mqttha"] == 1;
 		}
 	}
-#ifdef DEBUG
-	Serial.println(F("[ INFO ] Configuration done."));
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.println(F("[ INFO ] Configuration done."));
 #endif
 	config.present = true;
 	return true;

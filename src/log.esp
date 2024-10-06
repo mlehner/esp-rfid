@@ -21,8 +21,8 @@ void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String d
 		eventlog.print("\n");
 		eventlog.close();
 	}
-#ifdef DEBUG
-	Serial.println("[ " + type + " ] " + src + " | " + desc + " | " + data);
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.println("[ " + type + " ] " + src + " | " + desc + " | " + data);
 #endif
 }
 
@@ -120,8 +120,8 @@ void ICACHE_FLASH_ATTR sendLogFile(int page, String fileName, int logFileType, A
 
 void ICACHE_FLASH_ATTR logMaintenance(String action, String filename, AsyncWebSocketClient *client)
 {
-#ifdef DEBUG
-	Serial.printf("[DEBUG] Log Maintenance Action: %s on %s\n", action.c_str(), filename.c_str());
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.printf("[DEBUG] Log Maintenance Action: %s on %s\n", action.c_str(), filename.c_str());
 #endif
 
 	// delete a file

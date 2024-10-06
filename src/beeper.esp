@@ -8,8 +8,8 @@ void beeperBeep()
 		if (currentMillis > beeperOffTime && digitalRead(config.beeperpin) == BEEPERon)
 		{
 			digitalWrite(config.beeperpin, BEEPERoff);
-#ifdef DEBUG
-			Serial.println("Beeper OFF");
+#ifdef ESPRFID_DEBUG
+			ESPRFID_DEBUG_PORT.println("Beeper OFF");
 #endif
 			beeperInterval = 0;
 		}
@@ -21,13 +21,13 @@ void beeperBeep()
     			previousMillis = currentMillis;
 				if (beeperState == BEEPERon) {
 					beeperState = BEEPERoff;
-#ifdef DEBUG
-					Serial.println("Beeper OFF");
+#ifdef ESPRFID_DEBUG
+					ESPRFID_DEBUG_PORT.println("Beeper OFF");
 #endif
 				} else {
 					beeperState = BEEPERon;
-#ifdef DEBUG
-					Serial.println("Beeper ON");
+#ifdef ESPRFID_DEBUG
+					ESPRFID_DEBUG_PORT.println("Beeper ON");
 #endif
 				}
 				digitalWrite(config.beeperpin, beeperState);
@@ -46,8 +46,8 @@ void beeperPinWaiting()
 	beeperOffTime = currentMillis + 500;
 	beeperInterval = 100;
 	digitalWrite(config.beeperpin, BEEPERon);
-#ifdef DEBUG
-	Serial.println("Beeper Pin Waiting ON");
+#ifdef ESPRFID_DEBUG
+	ESPRFID_DEBUG_PORT.println("Beeper Pin Waiting ON");
 #endif
 }
 
@@ -58,8 +58,8 @@ void beeperValidAccess()
 		beeperOffTime = currentMillis + 2000;
 		beeperInterval = 0;
 		digitalWrite(config.beeperpin, BEEPERon);
-#ifdef DEBUG
-		Serial.println("Beeper ON");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("Beeper ON");
 #endif
 	}
 }
@@ -70,8 +70,8 @@ void beeperAdminAccess()
 		beeperOffTime = currentMillis + 3000;
 		beeperInterval = 0;
 		digitalWrite(config.beeperpin, BEEPERon);
-#ifdef DEBUG
-		Serial.println("Beeper ON");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("Beeper ON");
 #endif
 	}
 }

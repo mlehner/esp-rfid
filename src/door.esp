@@ -34,9 +34,9 @@ void doorStatus(/* arguments */)
     else
     {
       openDoorMillis = currentMillis;
-#ifdef DEBUG
-      Serial.print("openDoorMillis : ");
-      Serial.println(openDoorMillis);
+#ifdef ESPRFID_DEBUG
+      ESPRFID_DEBUG_PORT.print("openDoorMillis : ");
+      ESPRFID_DEBUG_PORT.println(openDoorMillis);
 #endif
     }
     mqttPublishIo("door", "ON");
@@ -46,11 +46,11 @@ void doorStatus(/* arguments */)
 	{
 		if (currentMillis - openDoorMillis >= config.maxOpenDoorTime*1000)
 		{
-#ifdef DEBUG
-      Serial.print("currentMillis : ");
-      Serial.println(currentMillis);
-      Serial.print("delta millis : ");
-      Serial.println(currentMillis - openDoorMillis);
+#ifdef ESPRFID_DEBUG
+      ESPRFID_DEBUG_PORT.print("currentMillis : ");
+      ESPRFID_DEBUG_PORT.println(currentMillis);
+      ESPRFID_DEBUG_PORT.print("delta millis : ");
+      ESPRFID_DEBUG_PORT.println(currentMillis - openDoorMillis);
 #endif
 
 			writeEvent("WARN", "tamper", "Door wasn't closed within max open time!", "");

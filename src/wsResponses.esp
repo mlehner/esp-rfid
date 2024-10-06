@@ -78,8 +78,8 @@ void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 	FSInfo fsinfo;
 	if (!SPIFFS.info(fsinfo))
 	{
-#ifdef DEBUG
-		Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.print(F("[ WARN ] Error getting info on SPIFFS"));
 #endif
 	}
 	DynamicJsonDocument root(512);
@@ -92,7 +92,7 @@ void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 	root["availspiffs"] = fsinfo.totalBytes - fsinfo.usedBytes;
 	root["spiffssize"] = fsinfo.totalBytes;
 	root["uptime"] = uptimeSeconds;
-	root["version"] = VERSION;
+	root["version"] = ESPRFID_VERSION;
 
 	if (config.accessPointMode)
 	{

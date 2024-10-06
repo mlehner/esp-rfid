@@ -23,6 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <RemoteDebug.h>
+RemoteDebug Debug;
+
+#ifdef ESPRFID_DEBUG
+#define ESPRFID_DEBUG_PORT Debug
+#endif
+
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
 #include <SPI.h>
@@ -124,31 +131,31 @@ void remoteInvalidAccess(const char *newUsername, const char *newUid);
 
 void ICACHE_FLASH_ATTR setup()
 {
-#ifdef DEBUG
-	Serial.begin(115200);
-	Serial.println();
+#ifdef ESPRFID_DEBUG
+	DEBUG_ESP_PORT.begin(115200);
+	DEBUG_ESP_PORT.println();
 
-	Serial.print(F("[ INFO ] ESP RFID v"));
-	Serial.println(VERSION);
+	DEBUG_ESP_PORT.print(F("[ INFO ] ESP RFID v"));
+	DEBUG_ESP_PORT.println(ESPRFID_VERSION);
 
 	uint32_t realSize = ESP.getFlashChipRealSize();
 	uint32_t ideSize = ESP.getFlashChipSize();
 	FlashMode_t ideMode = ESP.getFlashChipMode();
-	Serial.printf("Flash real id:   %08X\n", ESP.getFlashChipId());
-	Serial.printf("Flash real size: %u\n\n", realSize);
-	Serial.printf("Flash ide  size: %u\n", ideSize);
-	Serial.printf("Flash ide speed: %u\n", ESP.getFlashChipSpeed());
-	Serial.printf("Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT"
+	DEBUG_ESP_PORT.printf("Flash real id:   %08X\n", ESP.getFlashChipId());
+	DEBUG_ESP_PORT.printf("Flash real size: %u\n\n", realSize);
+	DEBUG_ESP_PORT.printf("Flash ide  size: %u\n", ideSize);
+	DEBUG_ESP_PORT.printf("Flash ide speed: %u\n", ESP.getFlashChipSpeed());
+	DEBUG_ESP_PORT.printf("Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT"
 																	: ideMode == FM_DIO	   ? "DIO"
 																	: ideMode == FM_DOUT   ? "DOUT"
 																						   : "UNKNOWN"));
 	if (ideSize != realSize)
 	{
-		Serial.println("Flash Chip configuration wrong!\n");
+		DEBUG_ESP_PORT.println("Flash Chip configuration wrong!\n");
 	}
 	else
 	{
-		Serial.println("Flash Chip configuration ok.\n");
+		DEBUG_ESP_PORT.println("Flash Chip configuration ok.\n");
 	}
 #endif
 
@@ -160,9 +167,9 @@ void ICACHE_FLASH_ATTR setup()
 		}
 		else
 		{
-#ifdef DEBUG
-			Serial.println(F(" failed!"));
-			Serial.println(F("[ WARN ] Could not format filesystem!"));
+#ifdef ESPRFID_DEBUG
+			DEBUG_ESP_PORT.println(F(" failed!"));
+			DEBUG_ESP_PORT.println(F("[ WARN ] Could not format filesystem!"));
 #endif
 		}
 	}
@@ -173,6 +180,13 @@ void ICACHE_FLASH_ATTR setup()
 	setupWebServer();
 	setupWifi(configured);
 	writeEvent("INFO", "sys", "System setup completed, running", "");
+
+	// Initialize RemoteDebug
+	Debug.begin(config.deviceHostname);          // Initialize the WiFi server
+	Debug.setResetCmdEnabled(true);  // Enable the reset command
+	Debug.showProfiler(true);        // Profiler (Good to measure times, to optimize codes)
+	Debug.showColors(true);          // Colors
+	Debug.setSerialEnabled(true);
 }
 
 void ICACHE_RAM_ATTR loop()
@@ -213,20 +227,20 @@ void ICACHE_RAM_ATTR loop()
 				if (digitalRead(config.relayPin[currentRelay]) == !config.relayType[currentRelay]) // currently OFF, need to switch ON
 				{
 					mqttPublishIo("lock" + String(currentRelay), "UNLOCKED");
-#ifdef DEBUG
-					Serial.print("mili : ");
-					Serial.println(millis());
-					Serial.printf("activating relay %d now\n", currentRelay);
+#ifdef ESPRFID_DEBUG
+					ESPRFID_DEBUG_PORT.print("mili : ");
+					ESPRFID_DEBUG_PORT.println(millis());
+					ESPRFID_DEBUG_PORT.printf("activating relay %d now\n", currentRelay);
 #endif
 					digitalWrite(config.relayPin[currentRelay], config.relayType[currentRelay]);
 				}
 				else // currently ON, need to switch OFF
 				{
 					mqttPublishIo("lock" + String(currentRelay), "LOCKED");
-#ifdef DEBUG
-					Serial.print("mili : ");
-					Serial.println(millis());
-					Serial.printf("deactivating relay %d now\n", currentRelay);
+#ifdef ESPRFID_DEBUG
+					ESPRFID_DEBUG_PORT.print("mili : ");
+					ESPRFID_DEBUG_PORT.println(millis());
+					ESPRFID_DEBUG_PORT.printf("deactivating relay %d now\n", currentRelay);
 #endif
 					digitalWrite(config.relayPin[currentRelay], !config.relayType[currentRelay]);
 				}
@@ -238,10 +252,10 @@ void ICACHE_RAM_ATTR loop()
 			if (activateRelay[currentRelay])
 			{
 				mqttPublishIo("lock" + String(currentRelay), "UNLOCKED");
-#ifdef DEBUG
-				Serial.print("mili : ");
-				Serial.println(millis());
-				Serial.printf("activating relay %d now\n", currentRelay);
+#ifdef ESPRFID_DEBUG
+				ESPRFID_DEBUG_PORT.print("mili : ");
+				ESPRFID_DEBUG_PORT.println(millis());
+				ESPRFID_DEBUG_PORT.printf("activating relay %d now\n", currentRelay);
 #endif
 				digitalWrite(config.relayPin[currentRelay], config.relayType[currentRelay]);
 				previousMillis = millis();
@@ -251,14 +265,14 @@ void ICACHE_RAM_ATTR loop()
 			else if ((currentMillis - previousMillis >= config.activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
 			{
 				mqttPublishIo("lock" + String(currentRelay), "LOCKED");
-#ifdef DEBUG
-				Serial.println(currentMillis);
-				Serial.println(previousMillis);
-				Serial.println(config.activateTime[currentRelay]);
-				Serial.println(activateRelay[currentRelay]);
-				Serial.println("deactivate relay after this");
-				Serial.print("mili : ");
-				Serial.println(millis());
+#ifdef ESPRFID_DEBUG
+				ESPRFID_DEBUG_PORT.println(currentMillis);
+				ESPRFID_DEBUG_PORT.println(previousMillis);
+				ESPRFID_DEBUG_PORT.println(config.activateTime[currentRelay]);
+				ESPRFID_DEBUG_PORT.println(activateRelay[currentRelay]);
+				ESPRFID_DEBUG_PORT.println("deactivate relay after this");
+				ESPRFID_DEBUG_PORT.print("mili : ");
+				ESPRFID_DEBUG_PORT.println(millis());
 #endif
 				digitalWrite(config.relayPin[currentRelay], !config.relayType[currentRelay]);
 				deactivateRelay[currentRelay] = false;
@@ -267,8 +281,8 @@ void ICACHE_RAM_ATTR loop()
 	}
 	if (formatreq)
 	{
-#ifdef DEBUG
-		Serial.println(F("[ WARN ] Factory reset initiated..."));
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println(F("[ WARN ] Factory reset initiated..."));
 #endif
 		SPIFFS.end();
 		ws.enable(false);
@@ -317,9 +331,9 @@ void ICACHE_RAM_ATTR loop()
 		{
 			mqttPublishHeartbeat(epoch, uptimeSeconds);
 			nextbeat = (unsigned)epoch + config.mqttInterval;
-#ifdef DEBUG
-			Serial.print("[ INFO ] Nextbeat=");
-			Serial.println(nextbeat);
+#ifdef ESPRFID_DEBUG
+			ESPRFID_DEBUG_PORT.print("[ INFO ] Nextbeat=");
+			ESPRFID_DEBUG_PORT.println(nextbeat);
 #endif
 		}
 		processMqttQueue();
@@ -329,4 +343,6 @@ void ICACHE_RAM_ATTR loop()
 
 	// clean unused websockets
 	ws.cleanupClients();
+
+	Debug.handle();
 }

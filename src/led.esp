@@ -6,8 +6,8 @@ void ledWaitingOn()
 	if (config.ledwaitingpin != 255)
 	{
 		digitalWrite(config.ledwaitingpin, LEDon);
-#ifdef DEBUG
-		Serial.println("LED waiting ON");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("LED waiting ON");
 #endif
 	}
 }
@@ -17,8 +17,8 @@ void ledWaitingOff()
 	if (config.ledwaitingpin != 255)
 	{
 		digitalWrite(config.ledwaitingpin, LEDoff);
-#ifdef DEBUG
-		Serial.println("LED waiting OFF");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("LED waiting OFF");
 #endif
 	}
 }
@@ -28,8 +28,8 @@ void ledWifiOn()
 	if (config.wifipin != 255)
 	{
 		digitalWrite(config.wifipin, LEDon);
-#ifdef DEBUG
-		Serial.println("LED WiFi ON");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("LED WiFi ON");
 #endif
 	}
 }
@@ -39,8 +39,8 @@ void ledWifiOff()
 	if (config.wifipin != 255)
 	{
 		digitalWrite(config.wifipin, LEDoff);
-#ifdef DEBUG
-		Serial.println("LED WiFi OFF");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("LED WiFi OFF");
 #endif
 	}
 }
@@ -72,8 +72,8 @@ void ledAccessGrantedOff()
 	{
 		accessgrantedOffTime = 0;
 		digitalWrite(config.accessgrantedpin, LEDoff);
-#ifdef DEBUG
-		Serial.println("LED access granted OFF");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("LED access granted OFF");
 #endif
 	}
 }
@@ -84,8 +84,8 @@ void ledAccessGrantedOn()
 	{
 		accessgrantedOffTime = currentMillis + 2000;
 		digitalWrite(config.accessgrantedpin, LEDon);
-#ifdef DEBUG
-		Serial.println("LED access granted ON");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("LED access granted ON");
 #endif
 	}
 }
@@ -96,8 +96,8 @@ void ledAccessDeniedOff()
 	{
 		accessdeniedOffTime = 0;
 		digitalWrite(config.accessdeniedpin, LEDoff);
-#ifdef DEBUG
-		Serial.println("LED access denied OFF");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("LED access denied OFF");
 #endif
 	}
 }
@@ -108,8 +108,8 @@ void ledAccessDeniedOn()
 	{
 		accessdeniedOffTime = currentMillis + 1000;
 		digitalWrite(config.accessdeniedpin, LEDon);
-#ifdef DEBUG
-		Serial.println("LED access denied ON");
+#ifdef ESPRFID_DEBUG
+		ESPRFID_DEBUG_PORT.println("LED access denied ON");
 #endif
 	}
 }
