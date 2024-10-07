@@ -521,7 +521,7 @@ void rfidOutsideMessaging()
 		beeperValidAccess();
 		ledAccessGrantedOn();
 	}
-	if (processingState == validAdmin)
+	else if (processingState == validAdmin)
 	{
 		ws.textAll("{\"command\":\"giveAccess\"}");
 		ESPRFID_LOG_INFO(" has admin access, enable wifi");
@@ -533,35 +533,35 @@ void rfidOutsideMessaging()
 		beeperAdminAccess();
 		ledAccessGrantedOn();
 	}
-	if (processingState == expired)
+	else if (processingState == expired)
 	{
 		ESPRFID_LOG_INFO(" expired");
 		mqttPublishAccess(epoch, "true", "Expired", username, uid);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
-	if (processingState == wrongPincode)
+	else if (processingState == wrongPincode)
 	{
 		ESPRFID_LOG_INFO("wrongPincode");
 		mqttPublishAccess(epoch, "true", "Wrong pin code", username, uid);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
-	if (processingState == notValid)
+	else if (processingState == notValid)
 	{
 		ESPRFID_LOG_INFO(" does not have access");
 		mqttPublishAccess(epoch, "true", "Disabled", username, uid);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
-	if (processingState == timedOut)
+	else if (processingState == timedOut)
 	{
 		ESPRFID_LOG_INFO("timed out");
 		mqttPublishAccess(epoch, "false", "Timed out", username, uid);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
-	if (processingState == unknown)
+	else if (processingState == unknown)
 	{
 		ESPRFID_LOG_INFO("unknown");
 		String data = String(uid) += " " + String(type);
@@ -582,7 +582,8 @@ void rfidOutsideMessaging()
 		mqttPublishAccess(epoch, "false", "Denied", "Unknown", uid);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
-	} else if (uid != "" && processingState != waitingProcessing)
+	}
+	else if (uid != "" && processingState != waitingProcessing)
 	{
 		ESPRFID_LOG_INFO("piccscan");
 		writeLatest(uid, username, accountType);
