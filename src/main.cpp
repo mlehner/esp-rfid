@@ -26,8 +26,17 @@ SOFTWARE.
 #include <RemoteDebug.h>
 RemoteDebug Debug;
 
+#define ESPRFID_DEBUG 1
+
 #ifdef ESPRFID_DEBUG
+#ifndef DEBUG_ESP_PORT
+#define DEBUG_ESP_PORT Serial
+#endif
 #define ESPRFID_DEBUG_PORT Debug
+#define ESPRFID_LOG_INFO(fmt, ...) debugI(fmt, ##__VA_ARGS__)
+#define ESPRFID_LOG_DEBUG(fmt, ...) debugD(fmt, ##__VA_ARGS__)
+#define ESPRFID_LOG_WARN(fmt, ...) debugW(fmt, ##__VA_ARGS__)
+#define ESPRFID_LOG_ERROR(fmt, ...) debugE(fmt, ##__VA_ARGS__)
 #endif
 
 #include "Arduino.h"
