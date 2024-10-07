@@ -76,7 +76,7 @@ void beeperAccessDenied()
 {
 	if (config.beeperpin != 255)
 	{
-		beeperOffTime = currentMillis + 1000;
+		beeperOffTime = currentMillis + 1200;
 		beeperInterval = 200;
 	}
 }
