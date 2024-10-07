@@ -60,6 +60,9 @@ void loadWiegandData()
 	// wg.available checks if there's new info and populates all the internal data
 	// so it should be called only once per loop
 	wiegandAvailable = wg.available();
+	if (wiegandAvailable) {
+		ESPRFID_LOG_DEBUG("wiegandAvailable = 1");
+	}
 }
 
 void rfidPrepareRead()
@@ -304,6 +307,7 @@ void pinCodeRead()
 	// readers use this as special admin code and would hence require *#PIN#
 	if (wg.getWiegandType() == WIEGANDTYPE_KEYPRESS4 || wg.getWiegandType() == WIEGANDTYPE_KEYPRESS8)
 	{
+		ESPRFID_LOG_DEBUG("Keypress Type = %i", wg.getWiegandType());
 		DynamicJsonDocument root(512);
 		root["cmd"] = "log";
 		root["time"] = epoch;
@@ -538,6 +542,7 @@ void rfidOutsideMessaging()
 	}
 	if (processingState == wrongPincode)
 	{
+		ESPRFID_LOG_INFO("wrongPincode");
 		mqttPublishAccess(epoch, "true", "Wrong pin code", username, uid);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
@@ -551,12 +556,14 @@ void rfidOutsideMessaging()
 	}
 	if (processingState == timedOut)
 	{
+		ESPRFID_LOG_INFO("timed out");
 		mqttPublishAccess(epoch, "false", "Timed out", username, uid);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
 	if (processingState == unknown)
 	{
+		ESPRFID_LOG_INFO("unknown");
 		String data = String(uid) += " " + String(type);
 		writeEvent("WARN", "rfid", "Unknown rfid tag is scanned", data);
 		writeLatest(uid, "Unknown", 98);
@@ -577,6 +584,7 @@ void rfidOutsideMessaging()
 		beeperAccessDenied();
 	} else if (uid != "" && processingState != waitingProcessing)
 	{
+		ESPRFID_LOG_INFO("piccscan");
 		writeLatest(uid, username, accountType);
 		DynamicJsonDocument root(512);
 		root["command"] = "piccscan";
@@ -630,6 +638,7 @@ void rfidLoop()
 		// then mark this is timed out, remote took too long to respond
 
 		if (rfidState == pinCodeEntered) {
+			ESPRFID_LOG_DEBUG("cardReadCooldown expired during rfidState == pinCodeEntered, setting processingState = timedOut");
 			processingState = timedOut;
 		}
 	}
@@ -640,6 +649,7 @@ void rfidLoop()
 #endif
 
 	if ((keyTimer > 0 && millis() - keyTimer >= KEYBOARD_TIMEOUT_MILIS)) {
+		ESPRFID_LOG_DEBUG("keyTimer expired, setting processingState = timedOut");
 		processingState = timedOut;
 	}
 
