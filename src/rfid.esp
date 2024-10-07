@@ -617,6 +617,7 @@ void cleanRfidLoop()
 		ESPRFID_LOG_INFO("Read timeout or clean after read");
 		keyTimer = 0;
 		currentInput = "";
+		username = "";
 		type = "";
 		lastUid = "";
 		uid = "";
