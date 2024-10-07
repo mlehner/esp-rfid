@@ -45,10 +45,6 @@ void beeperPinWaiting()
 
 	beeperOffTime = currentMillis + 500;
 	beeperInterval = 100;
-	digitalWrite(config.beeperpin, BEEPERon);
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.println("Beeper Pin Waiting ON");
-#endif
 }
 
 void beeperValidAccess()
