@@ -48,9 +48,7 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 
 	if (error)
 	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println(F("[ WARN ] Couldn't parse WebSocket message"));
-#endif
+		ESPRFID_LOG_WARN("Couldn't parse WebSocket message");
 		free(incomingMessage->serializedMessage);
 		free(incomingMessage);
 		return;
@@ -133,7 +131,7 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 	else if (strcmp(command, "userfile") == 0)
 	{
 #ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println(F("[ DEBUG ] userfile received"));
+		ESPRFID_LOG_DEBUG("userfile received");
 		serializeJson(root, Debug);
 #endif
 		const char *uid = root["uid"];
@@ -144,9 +142,7 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 		if (f)
 		{
 			serializeJson(root, f);
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println(F("[ DEBUG ] userfile saved"));
-#endif
+			ESPRFID_LOG_DEBUG("userfile saved");
 		}
 		f.close();
 		client->text("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
@@ -215,9 +211,7 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *c
 {
 	if (type == WS_EVT_ERROR)
 	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.printf("[ WARN ] WebSocket[%s][%u] error(%u): %s\r\n", server->url(), client->id(), *((uint16_t *)arg), (char *)data);
-#endif
+		ESPRFID_LOG_WARN("WebSocket[%s][%u] error(%u): %s\r\n", server->url(), client->id(), *((uint16_t *)arg), (char *)data);
 	}
 	else if (type == WS_EVT_DATA)
 	{

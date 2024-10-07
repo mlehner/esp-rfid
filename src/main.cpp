@@ -236,21 +236,15 @@ void ICACHE_RAM_ATTR loop()
 				if (digitalRead(config.relayPin[currentRelay]) == !config.relayType[currentRelay]) // currently OFF, need to switch ON
 				{
 					mqttPublishIo("lock" + String(currentRelay), "UNLOCKED");
-#ifdef ESPRFID_DEBUG
-					ESPRFID_DEBUG_PORT.print("mili : ");
-					ESPRFID_DEBUG_PORT.println(millis());
-					ESPRFID_DEBUG_PORT.printf("activating relay %d now\n", currentRelay);
-#endif
+					ESPRFID_LOG_DEBUG("mili : %lu", millis());
+					ESPRFID_LOG_INFO("activating relay %d now", currentRelay);
 					digitalWrite(config.relayPin[currentRelay], config.relayType[currentRelay]);
 				}
 				else // currently ON, need to switch OFF
 				{
 					mqttPublishIo("lock" + String(currentRelay), "LOCKED");
-#ifdef ESPRFID_DEBUG
-					ESPRFID_DEBUG_PORT.print("mili : ");
-					ESPRFID_DEBUG_PORT.println(millis());
-					ESPRFID_DEBUG_PORT.printf("deactivating relay %d now\n", currentRelay);
-#endif
+					ESPRFID_LOG_DEBUG("mili : %lu", millis());
+					ESPRFID_LOG_INFO("deactivating relay %d now\n", currentRelay);
 					digitalWrite(config.relayPin[currentRelay], !config.relayType[currentRelay]);
 				}
 				activateRelay[currentRelay] = false;
@@ -261,11 +255,8 @@ void ICACHE_RAM_ATTR loop()
 			if (activateRelay[currentRelay])
 			{
 				mqttPublishIo("lock" + String(currentRelay), "UNLOCKED");
-#ifdef ESPRFID_DEBUG
-				ESPRFID_DEBUG_PORT.print("mili : ");
-				ESPRFID_DEBUG_PORT.println(millis());
-				ESPRFID_DEBUG_PORT.printf("activating relay %d now\n", currentRelay);
-#endif
+				ESPRFID_LOG_DEBUG("mili : %lu", millis());
+				ESPRFID_LOG_INFO("activating relay %d now", currentRelay);
 				digitalWrite(config.relayPin[currentRelay], config.relayType[currentRelay]);
 				previousMillis = millis();
 				activateRelay[currentRelay] = false;
@@ -274,15 +265,9 @@ void ICACHE_RAM_ATTR loop()
 			else if ((currentMillis - previousMillis >= config.activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
 			{
 				mqttPublishIo("lock" + String(currentRelay), "LOCKED");
-#ifdef ESPRFID_DEBUG
-				ESPRFID_DEBUG_PORT.println(currentMillis);
-				ESPRFID_DEBUG_PORT.println(previousMillis);
-				ESPRFID_DEBUG_PORT.println(config.activateTime[currentRelay]);
-				ESPRFID_DEBUG_PORT.println(activateRelay[currentRelay]);
-				ESPRFID_DEBUG_PORT.println("deactivate relay after this");
-				ESPRFID_DEBUG_PORT.print("mili : ");
-				ESPRFID_DEBUG_PORT.println(millis());
-#endif
+				ESPRFID_LOG_DEBUG("currentMillis=%lu previousMillis=%lu activateTime[%d]=%lu activateRelay[%d]=%u", currentMillis, previousMillis, currentRelay, config.activateTime[currentRelay], currentRelay, activateRelay[currentRelay]);
+				ESPRFID_LOG_DEBUG("mili : %lu", millis());
+				ESPRFID_LOG_INFO("deactivate relay after this");
 				digitalWrite(config.relayPin[currentRelay], !config.relayType[currentRelay]);
 				deactivateRelay[currentRelay] = false;
 			}
@@ -290,9 +275,7 @@ void ICACHE_RAM_ATTR loop()
 	}
 	if (formatreq)
 	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println(F("[ WARN ] Factory reset initiated..."));
-#endif
+		ESPRFID_LOG_WARN("Factory reset initiated...");
 		SPIFFS.end();
 		ws.enable(false);
 		SPIFFS.format();
@@ -340,10 +323,7 @@ void ICACHE_RAM_ATTR loop()
 		{
 			mqttPublishHeartbeat(epoch, uptimeSeconds);
 			nextbeat = (unsigned)epoch + config.mqttInterval;
-#ifdef ESPRFID_DEBUG
-			ESPRFID_DEBUG_PORT.print("[ INFO ] Nextbeat=");
-			ESPRFID_DEBUG_PORT.println(nextbeat);
-#endif
+			ESPRFID_LOG_DEBUG("Nextbeat=%lu", nextbeat);
 		}
 		processMqttQueue();
 	}

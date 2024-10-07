@@ -34,9 +34,7 @@ void ICACHE_FLASH_ATTR setupWebServer() {
 		if (final) {
 			if (Update.end(true)) {
 				writeEvent("INFO", "updt", "Firmware update is finished", "");
-#ifdef ESPRFID_DEBUG
-				ESPRFID_DEBUG_PORT.printf("[ UPDT ] Firmware update finished: %uB\n", index + len);
-#endif
+				ESPRFID_LOG_INFO("Firmware update finished: %uB", index + len);
 				shouldReboot = !Update.hasError();
 			} else {
 				writeEvent("ERRO", "updt", "Update is failed", "");

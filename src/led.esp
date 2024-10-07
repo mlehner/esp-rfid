@@ -6,9 +6,7 @@ void ledWaitingOn()
 	if (config.ledwaitingpin != 255)
 	{
 		digitalWrite(config.ledwaitingpin, LEDon);
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println("LED waiting ON");
-#endif
+		ESPRFID_LOG_DEBUG("LED waiting ON");
 	}
 }
 
@@ -17,9 +15,7 @@ void ledWaitingOff()
 	if (config.ledwaitingpin != 255)
 	{
 		digitalWrite(config.ledwaitingpin, LEDoff);
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println("LED waiting OFF");
-#endif
+		ESPRFID_LOG_DEBUG("LED waiting OFF");
 	}
 }
 
@@ -28,9 +24,7 @@ void ledWifiOn()
 	if (config.wifipin != 255)
 	{
 		digitalWrite(config.wifipin, LEDon);
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println("LED WiFi ON");
-#endif
+		ESPRFID_LOG_DEBUG("LED WiFi ON");
 	}
 }
 
@@ -39,9 +33,7 @@ void ledWifiOff()
 	if (config.wifipin != 255)
 	{
 		digitalWrite(config.wifipin, LEDoff);
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println("LED WiFi OFF");
-#endif
+		ESPRFID_LOG_DEBUG("LED WiFi OFF");
 	}
 }
 
@@ -72,9 +64,7 @@ void ledAccessGrantedOff()
 	{
 		accessgrantedOffTime = 0;
 		digitalWrite(config.accessgrantedpin, LEDoff);
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println("LED access granted OFF");
-#endif
+		ESPRFID_LOG_DEBUG("LED access granted OFF");
 	}
 }
 
@@ -84,9 +74,7 @@ void ledAccessGrantedOn()
 	{
 		accessgrantedOffTime = currentMillis + 2000;
 		digitalWrite(config.accessgrantedpin, LEDon);
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println("LED access granted ON");
-#endif
+		ESPRFID_LOG_DEBUG("LED access granted ON");
 	}
 }
 
@@ -96,9 +84,7 @@ void ledAccessDeniedOff()
 	{
 		accessdeniedOffTime = 0;
 		digitalWrite(config.accessdeniedpin, LEDoff);
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println("LED access denied OFF");
-#endif
+		ESPRFID_LOG_DEBUG("LED access denied OFF");
 	}
 }
 
@@ -108,8 +94,6 @@ void ledAccessDeniedOn()
 	{
 		accessdeniedOffTime = currentMillis + 1000;
 		digitalWrite(config.accessdeniedpin, LEDon);
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println("LED access denied ON");
-#endif
+		ESPRFID_LOG_DEBUG("LED access denied ON");
 	}
 }

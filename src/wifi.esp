@@ -5,9 +5,7 @@ void setEnableWifi()
 
 void onWifiConnect(const WiFiEventStationModeConnected &event)
 {
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.println(F("[ INFO ] WiFi STA Connected"));
-#endif
+	ESPRFID_LOG_INFO("WiFi STA Connected");
 	mqttReconnectTimer.detach();
 	if (!wifiReconnectTimer.active() && !config.fallbackMode)
 	{
@@ -22,9 +20,7 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 	{
 		return;
 	}
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.println(F("[ INFO ] WiFi STA Disconnected"));
-#endif
+	ESPRFID_LOG_INFO("WiFi STA Disconnected");
 	mqttReconnectTimer.detach();
 	disconnectMqtt();
 	if (!wifiReconnectTimer.active() && !config.fallbackMode)
@@ -36,10 +32,7 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 
 void onWifiGotIP(const WiFiEventStationModeGotIP &event)
 {
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.print("[ INFO ] WiFi IP Connected: ");
-	ESPRFID_DEBUG_PORT.println(WiFi.localIP().toString());
-#endif
+	ESPRFID_LOG_INFO("WiFi IP Connected: %s", WiFi.localIP().toString().c_str());
 	wifiReconnectTimer.detach();
 	ledWifiOn();
 	connectToMqtt();
@@ -47,13 +40,9 @@ void onWifiGotIP(const WiFiEventStationModeGotIP &event)
 
 bool ICACHE_FLASH_ATTR startAP(IPAddress apip, IPAddress apsubnet, bool hidden, const char *ssid, const char *password = NULL)
 {
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
-#endif
+	ESPRFID_LOG_INFO("ESP-RFID is running in AP Mode ");
 	WiFi.mode(WIFI_AP);
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.print(F("[ INFO ] Configuring access point... "));
-#endif
+	ESPRFID_LOG_INFO("Configuring access point... ");
 
 	WiFi.softAPConfig(apip, apip, apsubnet);
 
@@ -66,22 +55,14 @@ bool ICACHE_FLASH_ATTR startAP(IPAddress apip, IPAddress apsubnet, bool hidden, 
 	{
 		success = WiFi.softAP(ssid, password);
 	}
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.println(success ? F("Ready") : F("Failed!"));
-#endif
+	ESPRFID_LOG_INFO("AP Status: %s", success ? "Ready" : "Failed!");
 
 	if (success)
 	{
 		ledWifiOn();
 	}
 
-#ifdef ESPRFID_DEBUG
-	IPAddress myIP = WiFi.softAPIP();
-
-	ESPRFID_DEBUG_PORT.print(F("[ INFO ] AP IP address: "));
-	ESPRFID_DEBUG_PORT.println(myIP);
-	ESPRFID_DEBUG_PORT.printf("[ INFO ] AP SSID: %s\n", ssid);
-#endif
+	ESPRFID_LOG_INFO("[ INFO ] AP IP address: %s, AP SSID: %s", WiFi.softAPIP().toString().c_str(), ssid);
 	return success;
 }
 
@@ -89,9 +70,7 @@ bool ICACHE_FLASH_ATTR startAP(IPAddress apip, IPAddress apsubnet, bool hidden, 
 void ICACHE_FLASH_ATTR fallbacktoAPMode()
 {
 	config.accessPointMode = true;
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.println(F("[ INFO ] ESP-RFID is running in Fallback AP Mode"));
-#endif
+	ESPRFID_LOG_INFO("ESP-RFID is running in Fallback AP Mode");
 	WiFi.mode(WIFI_AP);
 	uint8_t macAddr[6];
 	WiFi.softAPmacAddress(macAddr);
@@ -100,13 +79,7 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode()
 	if (WiFi.softAP(ssid))
 	{
 		ledWifiOn();
-#ifdef ESPRFID_DEBUG
-		IPAddress myIP = WiFi.softAPIP();
-
-		ESPRFID_DEBUG_PORT.print(F("[ INFO ] AP IP address: "));
-		ESPRFID_DEBUG_PORT.println(myIP);
-		ESPRFID_DEBUG_PORT.printf("[ INFO ] AP SSID: %s\n", ssid);
-#endif
+		ESPRFID_LOG_INFO("AP IP address: %s, AP SSID: %s", WiFi.softAPIP().toString().c_str(), ssid);
 	}
 }
 
@@ -121,35 +94,20 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 	{
 		WiFi.config(config.ipAddress, config.gatewayIp, config.subnetIp, config.dnsIp);
 	}
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.print(F("[ INFO ] Trying to connect WiFi: "));
-	ESPRFID_DEBUG_PORT.println(ssid);
-	ESPRFID_DEBUG_PORT.print(F("[ INFO ] WiFi BSSID: "));
-#endif
+	ESPRFID_LOG_INFO("Trying to connect WiFi: %s, WiFi BSSID: %c:%c:%c:%c:%c:%c", ssid, bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5]);
 	for (int i = 0; i < 6; i++)
 	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.print(bssid[i]);
-		if (i < 5)
-			ESPRFID_DEBUG_PORT.print(F(":"));
-		else
-			ESPRFID_DEBUG_PORT.println();
-#endif
 		if (bssid[i] != 0)
 			useBSSID = true;
 	}
 	if (useBSSID)
 	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println(F("[ INFO ] BSSID locked"));
-#endif
+		ESPRFID_LOG_INFO("BSSID locked");
 		WiFi.begin(ssid, password, 0, bssid);
 	}
 	else
 	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println(F("[ INFO ] any BSSID"));
-#endif
+		ESPRFID_LOG_INFO("any BSSID");
 		WiFi.begin(ssid, password);
 	}
 	unsigned long now = millis();
@@ -176,10 +134,7 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 	}
 	else
 	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println();
-		ESPRFID_DEBUG_PORT.println(F("[ WARN ] Couldn't connect in time"));
-#endif
+		ESPRFID_LOG_WARN("Couldn't connect in time");
 		if (!config.fallbackMode)
 		{
 			wifiReconnectTimer.once(300, setEnableWifi);
@@ -193,9 +148,7 @@ void ICACHE_FLASH_ATTR disableWifi()
 	wiFiUptimeMillis = 0;
 	WiFi.disconnect(true);
 	WiFi.softAPdisconnect(true);
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.println(F("Turn wifi off."));
-#endif
+	ESPRFID_LOG_INFO("Turn wifi off.");
 }
 
 void ICACHE_FLASH_ATTR enableWifi()

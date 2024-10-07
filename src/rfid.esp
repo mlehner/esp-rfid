@@ -81,10 +81,8 @@ void wiegandRead()
 			type = String(wg.getWiegandType(), DEC);
 
 			cardReadCooldown = millis() + COOLDOWN_MILIS;
-#ifdef ESPRFID_DEBUG
-			ESPRFID_DEBUG_PORT.print(F("[ INFO ] PICC's UID: "));
-			ESPRFID_DEBUG_PORT.println(uid);
-#endif
+			ESPRFID_LOG_INFO("PICC's UID: %s, Type: %s", uid.c_str(), type.c_str());
+			ESPRFID_LOG_DEBUG("cardReadCooldown = %lu", cardReadCooldown);
 
 			DynamicJsonDocument root(512);
 			root["cmd"] = "log";
@@ -118,10 +116,7 @@ void wiegandRead()
 				if (error)
 				{
 					processingState = notValid;
-#ifdef ESPRFID_DEBUG
-					ESPRFID_DEBUG_PORT.println("");
-					ESPRFID_DEBUG_PORT.println(F("[ WARN ] Failed to parse User Data"));
-#endif
+					ESPRFID_LOG_WARN("Failed to parse User Data");
 					return;
 				}
 				rfidState = cardSwiped;
@@ -169,17 +164,11 @@ void mfrc522Read()
 	}
 	rfidState = cardSwiped;
 
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.print(F("[ INFO ] PICC's UID: "));
-	ESPRFID_DEBUG_PORT.print(uid);
-#endif
 
 	MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
 	type = mfrc522.PICC_GetTypeName(piccType);
 
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.print(" " + type);
-#endif
+	ESPRFID_LOG_INFO("PICC's UID: %s %s", uid.c_str(), type.c_str());
 }
 
 void pn532Read()
@@ -191,17 +180,12 @@ void pn532Read()
 	found = pn532.ReadPassiveTargetID(pnuid, &u8_UidLength, &e_CardType);
 	if (found && u8_UidLength >= 4)
 	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.print(F("[ INFO ] PICC's UID: "));
-#endif
 		for (uint8_t i = 0; i < u8_UidLength; i++)
 		{
 			uid += String(pnuid[i], HEX);
 			rfidState = cardSwiped;
 		}
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.print(uid);
-#endif
+		ESPRFID_LOG_INFO("PICC's UID: %s", uid.c_str());
 		cardReadCooldown = millis() + COOLDOWN_MILIS;
 	}
 }
@@ -226,10 +210,7 @@ void genericRead()
 		type = RFIDr.GetTagType();
 		rfidState = cardSwiped;
 		cardReadCooldown = millis() + COOLDOWN_MILIS;
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.print(F("[ INFO ] PICC's UID: "));
-		ESPRFID_DEBUG_PORT.print(uid);
-#endif
+		ESPRFID_LOG_INFO("PICC's UID: %s", uid.c_str());
 	}
 
 	/*
@@ -335,9 +316,7 @@ void pinCodeRead()
 
 		if (wg.getCode() != WIEGAND_ENT && wg.getCode() != WIEGAND_ESC) // normal key entry, add to currentInput
 		{
-#ifdef ESPRFID_DEBUG
-			ESPRFID_DEBUG_PORT.println("Keycode captured. . .");
-#endif
+			ESPRFID_LOG_DEBUG("Keycode captured. . .");
 			currentInput = currentInput + String(wg.getCode());
 			keyTimer = millis();
 			ledWaitingOn();
@@ -345,9 +324,7 @@ void pinCodeRead()
 		{
 			if(wg.getCode() == WIEGAND_ESC) // esc, abort pincode
 			{
-#ifdef ESPRFID_DEBUG
-				ESPRFID_DEBUG_PORT.println("Keycode escape, aborting pincode entry");
-#endif
+				ESPRFID_LOG_INFO("Keycode escape, aborting pincode entry");
 				rfidState = waitingRfid;
 				processingState = cancelled;
 				cardReadCooldown = millis() + COOLDOWN_MILIS;
@@ -375,11 +352,7 @@ void pinCodeRead()
 				{
 					rfidState = pinCodeEntered;
 				}
-#ifdef ESPRFID_DEBUG
-				ESPRFID_DEBUG_PORT.println("Stop capture keycode . . .");
-				ESPRFID_DEBUG_PORT.print(F("[ INFO ] PICC's pin code: "));
-				ESPRFID_DEBUG_PORT.println(currentInput);
-#endif
+				ESPRFID_LOG_INFO("PICC's pin code: %s", currentInput.c_str());
 				// reset lastUid since a PIN was entered
 				lastUid = "";
 				currentInput = "";
@@ -428,11 +401,7 @@ void rfidProcess()
 			return;
 		}
 		uid = v1uid;
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.print(" (found uid in v1 format: ");
-		ESPRFID_DEBUG_PORT.print(v1uid);
-		ESPRFID_DEBUG_PORT.print(")");
-#endif
+		ESPRFID_LOG_INFO(" (found uid in v1 format: %s)", v1uid.c_str());
 	}
 
 	/*
@@ -451,10 +420,7 @@ void rfidProcess()
 	if (error)
 	{
 		processingState = notValid;
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println("");
-		ESPRFID_DEBUG_PORT.println(F("[ WARN ] Failed to parse User Data"));
-#endif
+		ESPRFID_LOG_WARN("Failed to parse User Data");
 		return;
 	}
 
@@ -463,9 +429,7 @@ void rfidProcess()
 	if(config.pinCodeRequested && pinCode != json["pincode"] && pinCode != uid && json["pincode"] != "")
 	{
 		processingState = wrongPincode;
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println("Wrong pin code");
-#endif
+		ESPRFID_LOG_INFO("Wrong pin code");
 		return;
 	}
 
@@ -475,15 +439,8 @@ void rfidProcess()
 	accountType = json["acctype"];
 	username = json["user"].as<String>();
 
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.println(" = known PICC");
-	ESPRFID_DEBUG_PORT.print("[ INFO ] User Name: '");
-	if (username == "undefined")
-		ESPRFID_DEBUG_PORT.print(uid);
-	else
-		ESPRFID_DEBUG_PORT.print(username);
-	ESPRFID_DEBUG_PORT.print("'");
-#endif
+	ESPRFID_LOG_INFO(" = known PICC");
+	ESPRFID_LOG_INFO("User Name: '%s'", username == "undefined" ? uid.c_str() : username.c_str());
 
 	if (accountType == ACCESS_GRANTED)
 	{
@@ -551,9 +508,7 @@ void rfidOutsideMessaging()
 	if (processingState == valid)
 	{
 		ws.textAll("{\"command\":\"giveAccess\"}");
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println(" has access relay");
-#endif
+		ESPRFID_LOG_INFO(" has access relay");
 		if (config.numRelays == 1) {
 			mqttPublishAccess(epoch, "true", "Always", username, uid);
 		} else {
@@ -565,9 +520,7 @@ void rfidOutsideMessaging()
 	if (processingState == validAdmin)
 	{
 		ws.textAll("{\"command\":\"giveAccess\"}");
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println(" has admin access, enable wifi");
-#endif
+		ESPRFID_LOG_INFO(" has admin access, enable wifi");
 		if (config.numRelays == 1) {
 			mqttPublishAccess(epoch, "true", "Admin", username, uid);
 		} else {
@@ -578,9 +531,7 @@ void rfidOutsideMessaging()
 	}
 	if (processingState == expired)
 	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println(" expired");
-#endif
+		ESPRFID_LOG_INFO(" expired");
 		mqttPublishAccess(epoch, "true", "Expired", username, uid);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
@@ -593,9 +544,7 @@ void rfidOutsideMessaging()
 	}
 	if (processingState == notValid)
 	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println(" does not have access");
-#endif
+		ESPRFID_LOG_INFO(" does not have access");
 		mqttPublishAccess(epoch, "true", "Disabled", username, uid);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
@@ -656,9 +605,7 @@ void cleanRfidLoop()
 	// Clear code and timer when timeout is reached
 	if (processingState != waitingProcessing)
 	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println("[ INFO ] Read timeout or clean after read");
-#endif
+		ESPRFID_LOG_INFO("Read timeout or clean after read");
 		keyTimer = 0;
 		currentInput = "";
 		type = "";

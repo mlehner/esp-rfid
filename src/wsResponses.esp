@@ -78,9 +78,7 @@ void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 	FSInfo fsinfo;
 	if (!SPIFFS.info(fsinfo))
 	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.print(F("[ WARN ] Error getting info on SPIFFS"));
-#endif
+		ESPRFID_LOG_WARN("Error getting info on SPIFFS");
 	}
 	DynamicJsonDocument root(512);
 	root["command"] = "status";

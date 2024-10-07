@@ -33,9 +33,7 @@ void trySyncNTPtime(unsigned long retrySeconds)
 
 	if (timeinfo.tm_year <= (2016 - 1900))
 	{
-#if ESPRFID_DEBUG
-		ESPRFID_DEBUG_PORT.println("[ WARN ] NTP sync failed");
-#endif
+		ESPRFID_LOG_WARN("NTP sync failed");
 
 		epoch = previousEpoch; // fallback to previous value, so that you can use the manually set time
 		return;
