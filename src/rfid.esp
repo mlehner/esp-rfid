@@ -300,6 +300,8 @@ void pinCodeRead()
 		return;
 	}
 
+	ESPRFID_LOG_DEBUG("Keypress Type = %i, code = %lu", wg.getWiegandType(), wg.getCode());
+
 	// if we get a 4 bit burst then a key has been pressed
 	// add the key to the current input and reset the Waiting time
 	// for the next key unless * or # have been pressed
