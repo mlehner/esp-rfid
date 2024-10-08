@@ -23,12 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#ifdef ESPRFID_DEBUG
 #include <RemoteDebug.h>
 RemoteDebug Debug;
 
-#define ESPRFID_DEBUG 1
-
-#ifdef ESPRFID_DEBUG
 #ifndef DEBUG_ESP_PORT
 #define DEBUG_ESP_PORT Serial
 #endif
@@ -37,6 +35,11 @@ RemoteDebug Debug;
 #define ESPRFID_LOG_DEBUG(fmt, ...) debugD(fmt, ##__VA_ARGS__)
 #define ESPRFID_LOG_WARN(fmt, ...) debugW(fmt, ##__VA_ARGS__)
 #define ESPRFID_LOG_ERROR(fmt, ...) debugE(fmt, ##__VA_ARGS__)
+#else
+#define ESPRFID_LOG_INFO(...) do { (void)0; } while (0)
+#define ESPRFID_LOG_DEBUG(...) do { (void)0; } while (0)
+#define ESPRFID_LOG_WARN(...) do { (void)0; } while (0)
+#define ESPRFID_LOG_ERROR(...) do { (void)0; } while (0)
 #endif
 
 #include "Arduino.h"
@@ -190,12 +193,14 @@ void ICACHE_FLASH_ATTR setup()
 	setupWifi(configured);
 	writeEvent("INFO", "sys", "System setup completed, running", "");
 
+#ifdef ESPRFID_DEBUG
 	// Initialize RemoteDebug
 	Debug.begin(config.deviceHostname);          // Initialize the WiFi server
 	Debug.setResetCmdEnabled(true);  // Enable the reset command
 	Debug.showProfiler(true);        // Profiler (Good to measure times, to optimize codes)
 	Debug.showColors(true);          // Colors
 	Debug.setSerialEnabled(true);
+#endif
 }
 
 void ICACHE_RAM_ATTR loop()
@@ -333,5 +338,7 @@ void ICACHE_RAM_ATTR loop()
 	// clean unused websockets
 	ws.cleanupClients();
 
+#ifdef ESPRFID_DEBUG
 	Debug.handle();
+#endif
 }
