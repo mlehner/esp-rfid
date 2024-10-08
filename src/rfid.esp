@@ -309,17 +309,6 @@ void pinCodeRead()
 	// readers use this as special admin code and would hence require *#PIN#
 	if (wg.getWiegandType() == WIEGANDTYPE_KEYPRESS4 || wg.getWiegandType() == WIEGANDTYPE_KEYPRESS8)
 	{
-		ESPRFID_LOG_DEBUG("Keypress Type = %i", wg.getWiegandType());
-		DynamicJsonDocument root(512);
-		root["cmd"] = "log";
-		root["time"] = epoch;
-		root["doorName"] = config.doorName[0];
-		root["type"] = "keypress";
-		root["key"] = translateKeyPress(wg.getCode());
-		root["hostname"] = config.deviceHostname;
-		root["doorip"] = WiFi.localIP().toString();
-		mqttPublishEvent(&root);
-
 		if (wg.getCode() != WIEGAND_ENT && wg.getCode() != WIEGAND_ESC) // normal key entry, add to currentInput
 		{
 			ESPRFID_LOG_DEBUG("Keycode captured. . .");
