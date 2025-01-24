@@ -109,6 +109,8 @@ void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 		root["ssid"] = String(reinterpret_cast<char *>(conf.ssid));
 		root["dns"] = printIP(WiFi.dnsIP());
 		root["mac"] = WiFi.macAddress();
+		root["rssi"] = WiFi.RSSI();
+		root["bssid"] = WiFi.BSSIDstr();
 	}
 
 	IPAddress ipaddr = IPAddress(info.ip.addr);
