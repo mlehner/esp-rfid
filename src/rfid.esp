@@ -7,6 +7,7 @@ String uid = "";
 String lastUid = "";
 String v1uid = "";
 String username = "";
+String remoteLogId = "";
 bool wiegandAvailable = false;
 unsigned long cardReadCooldown = 0;
 
@@ -35,10 +36,11 @@ enum RfidProcessingStates
 RfidStates rfidState = waitingRfid;
 RfidProcessingStates processingState = waitingProcessing;
 
-void remoteValidAccess(int doorNumber, const char *newUsername, const char *newUid)
+void remoteValidAccess(int doorNumber, const char *newUsername, const char *newUid, const char *logId)
 {
 	username = String(newUsername);
 	uid = String(newUid);
+	remoteLogId = String(logId);
 	processingState = valid;
 
 	if (digitalRead(config.relayPin[doorNumber]) == !config.relayType[doorNumber]) {
@@ -47,10 +49,11 @@ void remoteValidAccess(int doorNumber, const char *newUsername, const char *newU
 	previousMillis = millis();
 }
 
-void remoteInvalidAccess(const char *newUsername, const char *newUid)
+void remoteInvalidAccess(const char *newUsername, const char *newUid, const char *logId)
 {
 	username = String(newUsername);
 	uid = String(newUid);
+	remoteLogId = String(logId);
 	processingState = notValid;
 }
 
@@ -505,7 +508,7 @@ void rfidOutsideMessaging()
 		ws.textAll("{\"command\":\"giveAccess\"}");
 		ESPRFID_LOG_INFO(" has access relay");
 		if (config.numRelays == 1) {
-			mqttPublishAccess(epoch, "true", "Always", username, uid);
+			mqttPublishAccess(epoch, "true", "Always", username, uid, remoteLogId);
 		} else {
 			mqttPublishAccess(epoch, "true", accountTypes, username, uid);
 		}
@@ -517,7 +520,7 @@ void rfidOutsideMessaging()
 		ws.textAll("{\"command\":\"giveAccess\"}");
 		ESPRFID_LOG_INFO(" has admin access, enable wifi");
 		if (config.numRelays == 1) {
-			mqttPublishAccess(epoch, "true", "Admin", username, uid);
+			mqttPublishAccess(epoch, "true", "Admin", username, uid, remoteLogId);
 		} else {
 			mqttPublishAccess(epoch, "true", accountTypes, username, uid);
 		}
@@ -527,28 +530,28 @@ void rfidOutsideMessaging()
 	else if (processingState == expired)
 	{
 		ESPRFID_LOG_INFO(" expired");
-		mqttPublishAccess(epoch, "true", "Expired", username, uid);
+		mqttPublishAccess(epoch, "true", "Expired", username, uid, remoteLogId);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
 	else if (processingState == wrongPincode)
 	{
 		ESPRFID_LOG_INFO("wrongPincode");
-		mqttPublishAccess(epoch, "true", "Wrong pin code", username, uid);
+		mqttPublishAccess(epoch, "true", "Wrong pin code", username, uid, remoteLogId);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
 	else if (processingState == notValid)
 	{
 		ESPRFID_LOG_INFO(" does not have access");
-		mqttPublishAccess(epoch, "true", "Disabled", username, uid);
+		mqttPublishAccess(epoch, "true", "Disabled", username, uid, remoteLogId);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
 	else if (processingState == timedOut)
 	{
 		ESPRFID_LOG_INFO("timed out");
-		mqttPublishAccess(epoch, "false", "Timed out", username, uid);
+		mqttPublishAccess(epoch, "false", "Timed out", username, uid, remoteLogId);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
@@ -570,7 +573,7 @@ void rfidOutsideMessaging()
 			serializeJson(root, (char *)buffer->get(), len + 1);
 			ws.textAll(buffer);
 		}
-		mqttPublishAccess(epoch, "false", "Denied", "Unknown", uid);
+		mqttPublishAccess(epoch, "false", "Denied", "Unknown", uid, remoteLogId);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
@@ -613,6 +616,7 @@ void cleanRfidLoop()
 		lastUid = "";
 		uid = "";
 		v1uid = "";
+		remoteLogId = "";
 		rfidState = waitingRfid;
 		processingState = waitingProcessing;
 		ledWaitingOff();

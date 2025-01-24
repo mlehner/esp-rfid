@@ -7,6 +7,7 @@ struct MqttMessage {
 	char uid[20];
 	char user[64];
 	char door[20];
+	char logId[36];
 	char serializedMessage[MAX_MQTT_BUFFER];
 	MqttMessage *nextMessage = NULL;
 };
@@ -252,7 +253,7 @@ void mqttPublishHeartbeat(time_t heartbeat, time_t uptime)
 	mqttPublishEvent(&root);
 }
 
-void mqttPublishAccess(time_t accesstime, String const &isknown, String const &type, String const &user, String const &uid)
+void mqttPublishAccess(time_t accesstime, String const &isknown, String const &type, String const &user, String const &uid, String const &remoteLogId)
 {
 	DynamicJsonDocument root(512);
 	if (config.mqttEvents)
@@ -265,6 +266,10 @@ void mqttPublishAccess(time_t accesstime, String const &isknown, String const &t
 	root["access"] = type;
 	root["time"] = accesstime;
 	root["doorName"] = config.doorName[0];
+
+	if (!remoteLogId.isEmpty()) {
+		root["log_id"] = remoteLogId;
+	}
 
 	if (!config.mqttHA)
 	{
@@ -280,7 +285,12 @@ void mqttPublishAccess(time_t accesstime, String const &isknown, String const &t
 	}
 }
 
-void mqttPublishAccess(time_t accesstime, String const &isknown, int types[MAX_NUM_RELAYS], String const &user, String const &uid)
+void mqttPublishAccess(time_t accesstime, String const &isknown, String const &type, String const &user, String const &uid)
+{
+	mqttPublishAccess(accesstime, isknown, type, user, uid, "");
+}
+
+void mqttPublishAccess(time_t accesstime, String const &isknown, int types[MAX_NUM_RELAYS], String const &user, String const &uid, String const &remoteLogId)
 {
 	DynamicJsonDocument root(512);
 	JsonArray access = root.createNestedArray("access");
@@ -306,6 +316,10 @@ void mqttPublishAccess(time_t accesstime, String const &isknown, int types[MAX_N
 		doorNames.add(config.doorName[i]);
 	}
 
+	if (!remoteLogId.isEmpty()) {
+		root["log_id"] = remoteLogId;
+	}
+
 	root["uid"] = uid;
 	root["username"] = user;
 	root["time"] = accesstime;
@@ -322,6 +336,11 @@ void mqttPublishAccess(time_t accesstime, String const &isknown, int types[MAX_N
 	{
 		mqttPublishEvent(&root, "tag");
 	}
+}
+
+void mqttPublishAccess(time_t accesstime, String const &isknown, int types[MAX_NUM_RELAYS], String const &user, String const &uid)
+{
+	mqttPublishAccess(accesstime, isknown, types, user, uid, "");
 }
 
 void mqttPublishIo(String const &io, String const &state)
@@ -445,6 +464,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	}
 
 	MqttMessage* incomingMessage = new MqttMessage;
+
 	if (mqttIncomingJson.containsKey("cmd")) {
 		strlcpy(incomingMessage->command, mqttIncomingJson["cmd"], sizeof(incomingMessage->command));
 	} else {
@@ -460,6 +480,10 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	if (mqttIncomingJson.containsKey("door")) {
 		strlcpy(incomingMessage->door, mqttIncomingJson["door"], sizeof(incomingMessage->door));
 	}
+	if (mqttIncomingJson.containsKey("log_id")) {
+		strlcpy(incomingMessage->logId, mqttIncomingJson["log_id"], sizeof(incomingMessage->logId));
+	}
+
 	strlcpy(incomingMessage->serializedMessage, mqttBuffer, sizeof(mqttBuffer));
 
 	MqttMessage* lastMessage = mqttMessageQueue;
@@ -503,24 +527,26 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		writeLatest(" ", "MQTT", 1);
 		const char *door = incomingMessage->door;
 
-		remoteValidAccess(String(door).toInt(), "MQTT", " ");
+		remoteValidAccess(String(door).toInt(), "MQTT", " ", "");
 	}
 	else if (strcmp(command, "accessgranted") == 0)
 	{
 		const char *door = incomingMessage->door;
 		const char *username = incomingMessage->user;
 		const char *uid = incomingMessage->uid;
+		const char *logId = incomingMessage->logId;
 
 		// @TODO support multiple "doors"/relays
-		remoteValidAccess(String(door).toInt(), username, uid);
+		remoteValidAccess(String(door).toInt(), username, uid, logId);
 	}
 	else if (strcmp(command, "accessdenied") == 0)
 	{
 		const char *username = incomingMessage->user;
 		const char *uid = incomingMessage->uid;
+		const char *logId = incomingMessage->logId;
 
 		// @TODO support other states: wrongPincode, expired, unknown
-		remoteInvalidAccess(username, uid);
+		remoteInvalidAccess(username, uid, logId);
 	}
 	else if (strcmp(command, "close") == 0)
 	{

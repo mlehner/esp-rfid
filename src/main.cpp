@@ -124,8 +124,8 @@ unsigned long wifiPinBlink = millis();
 unsigned long wiFiUptimeMillis = 0;
 
 // rfid.h
-void remoteValidAccess(int doorNumber, const char *newUsername, const char *newUid);
-void remoteInvalidAccess(const char *newUsername, const char *newUid);
+void remoteValidAccess(int doorNumber, const char *newUsername, const char *newUid, const char *logId);
+void remoteInvalidAccess(const char *newUsername, const char *newUid, const char *logId);
 
 #include "led.esp"
 #include "beeper.esp"
