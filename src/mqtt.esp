@@ -247,6 +247,8 @@ void mqttPublishHeartbeat(time_t heartbeat, time_t uptime)
 	root["uptime"] = uptime;
 	root["ip"] = WiFi.localIP().toString();
 	root["hostname"] = config.deviceHostname;
+	root["wifi_rssi"] = WiFi.RSSI();
+	root["wifi_bssid"] = WiFi.BSSIDstr();
 	mqttPublishEvent(&root);
 }
 
