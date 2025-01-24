@@ -80,11 +80,6 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 			writeEvent("INFO", "sys", "Config stored in the SPIFFS", String(len) + " bytes");
 		}
 	}
-	else if (strcmp(command, "userlist") == 0)
-	{
-		int page = root["page"];
-		sendUserList(page, incomingMessage->client);
-	}
 	else if (strcmp(command, "status") == 0)
 	{
 		sendStatus(client);
@@ -127,25 +122,6 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 	{
 		SPIFFS.remove("/latestlog.json");
 		writeEvent("WARN", "sys", "Latest Access log cleared!", "");
-	}
-	else if (strcmp(command, "userfile") == 0)
-	{
-#ifdef ESPRFID_DEBUG
-		ESPRFID_LOG_DEBUG("userfile received");
-		serializeJson(root, Debug);
-#endif
-		const char *uid = root["uid"];
-		String filename = "/P/";
-		filename += uid;
-		File f = SPIFFS.open(filename, "w+");
-		// Check if we created the file
-		if (f)
-		{
-			serializeJson(root, f);
-			ESPRFID_LOG_DEBUG("userfile saved");
-		}
-		f.close();
-		client->text("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
 	}
 	else if (strcmp(command, "testrelay1") == 0)
 	{

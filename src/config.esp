@@ -33,29 +33,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		}
 	}
 
-	if (hardware.containsKey("doorstatpin"))
-	{
-		config.doorstatpin = hardware["doorstatpin"];
-		if (config.doorstatpin != 255)
-		{
-			pinMode(config.doorstatpin, INPUT);
-		}
-	}
-
-	if (hardware.containsKey("maxOpenDoorTime"))
-	{
-		config.maxOpenDoorTime = hardware["maxOpenDoorTime"];
-	}
-
-	if (hardware.containsKey("doorbellpin"))
-	{
-		config.doorbellpin = hardware["doorbellpin"];
-		if (config.doorbellpin != 255)
-		{
-			pinMode(config.doorbellpin, INPUT);
-		}
-	}
-
 	if (hardware.containsKey("accessdeniedpin"))
 	{
 		config.accessdeniedpin = hardware["accessdeniedpin"];
@@ -276,18 +253,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 
 	ws.setAuthentication("admin", config.httpPass);
 
-	for (int d = 0; d < 7; d++)
-	{
-		if (general.containsKey("openinghours"))
-		{
-			config.openingHours[d] = strdup(general["openinghours"][d].as<const char *>());
-		}
-		else
-		{
-			config.openingHours[d] = strdup("111111111111111111111111");
-		}
-	}
-
 	config.mqttEnabled = mqtt["enabled"] == 1;
 
 	if (config.mqttEnabled)
@@ -323,10 +288,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		if (mqtt.containsKey("mqttlog"))
 		{
 			config.mqttEvents = mqtt["mqttlog"] == 1;
-		}
-		if (mqtt.containsKey("mqttha"))
-		{
-			config.mqttHA = mqtt["mqttha"] == 1;
 		}
 	}
 	ESPRFID_LOG_INFO("Configuration done.");

@@ -14,20 +14,16 @@ struct Config {
     char *deviceHostname = NULL;
     bool dhcpEnabled = true;
     IPAddress dnsIp;
-    uint8_t doorbellpin = 255;
     char *doorName[MAX_NUM_RELAYS];
-    uint8_t doorstatpin = 255;
     bool fallbackMode = false;
     IPAddress gatewayIp;
     char *httpPass = NULL;
     IPAddress ipAddress;
     uint8_t ledwaitingpin = 255;
     int lockType[MAX_NUM_RELAYS];
-    uint8_t maxOpenDoorTime = 0;
     bool mqttAutoTopic = false;
     bool mqttEnabled = false;
     bool mqttEvents = false;	  // Sends events over MQTT disables SPIFFS file logging
-    bool mqttHA = false; // Sends events over simple MQTT topics and AutoDiscovery
     char *mqttHost = NULL;
     unsigned long mqttInterval = 180; // Add to GUI & json config
     char *mqttPass = NULL;
@@ -38,7 +34,6 @@ struct Config {
     char *ntpServer = NULL;
 	int ntpInterval = 0;
     int numRelays = 1;
-    char *openingHours[7];
     uint8_t openlockpin = 255;
     bool pinCodeRequested = false;
     bool pinCodeOnly = false;

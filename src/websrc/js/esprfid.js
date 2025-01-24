@@ -34,8 +34,6 @@ var config = {
         "readertype": 1,
         "wgd0pin": 4,
         "wgd1pin": 5,
-        "sspin": 0,
-        "rfidgain": 32,
         "wifipin": 255,
         "rtype": 1,
         "ltype": 0,
@@ -45,29 +43,17 @@ var config = {
         "beeperpin" : 255,
         "ledwaitingpin" : 255,
         "openlockpin": 255,
-        "doorbellpin": 255,
         "accessdeniedpin": 255,
         "accessgrantedpin": 255,
         "useridstoragemode": "hexadecimal",
         "requirepincodeafterrfid": 1,
         "allowpincodeonly": 0,
         "removeparitybits": 1,
-        "doorstatpin": 255,
-        "maxOpenDoorTime": 0
     },
     "general": {
         "hostnm": "esp-rfid",
         "restart": 0,
-        "pswd": "admin",
-        "openinghours": [
-          "111111111111111111111111",
-          "111111111111111111111111",
-          "111111111111111111111111",
-          "111111111111111111111111",
-          "111111111111111111111111",
-          "111111111111111111111111",
-          "111111111111111111111111",
-        ]
+        "pswd": "admin"
     },
     "mqtt": {
         "enabled": 0,
@@ -149,23 +135,7 @@ function syncBrowserTime() {
 }
 
 function handleReader() {
-  var rType = parseInt(document.getElementById("readertype").value);
-  if (rType === 0 || rType === 4) {
-    document.getElementById("wiegandForm").style.display = "none";
-    document.getElementById("mfrc522Form").style.display = "block";
-    document.getElementById("rc522gain").style.display = "block";
-  } else if (rType === 1 || rType === 5) {
     document.getElementById("wiegandForm").style.display = "block";
-    document.getElementById("mfrc522Form").style.display = "none";
-  } else if (rType === 2 || rType === 6) {
-    document.getElementById("wiegandForm").style.display = "none";
-    document.getElementById("mfrc522Form").style.display = "block";
-    document.getElementById("rc522gain").style.display = "none";
-  } else if (rType === 3) {
-    document.getElementById("wiegandForm").style.display = "none";
-    document.getElementById("mfrc522Form").style.display = "none";
-    document.getElementById("rc522gain").style.display = "none";
-  }
 }
 
 function handleLock(xnum) {
@@ -184,9 +154,6 @@ function listhardware() {
   document.getElementById("typerly").value = config.hardware.rtype;
   document.getElementById("delay").value = config.hardware.rtime;
   document.getElementById("wifipin").value = config.hardware.wifipin;
-  document.getElementById("doorstatpin").value = config.hardware.doorstatpin;
-  document.getElementById("maxOpenDoorTime").value = config.hardware.maxOpenDoorTime;
-  document.getElementById("doorbellpin").value = config.hardware.doorbellpin;
   document.getElementById("openlockpin").value = config.hardware.openlockpin;
   document.getElementById("accessdeniedpin").value = config.hardware.accessdeniedpin;
   document.getElementById("accessgrantedpin").value = config.hardware.accessgrantedpin;
@@ -199,8 +166,6 @@ function listhardware() {
   document.getElementById("readertype").value = config.hardware.readertype;
   document.getElementById("wg0pin").value = config.hardware.wgd0pin;
   document.getElementById("wg1pin").value = config.hardware.wgd1pin;
-  document.getElementById("gpioss").value = config.hardware.sspin;
-  document.getElementById("gain").value = config.hardware.rfidgain;
   document.getElementById("gpiorly").value = config.hardware.rpin;
   document.getElementById("doorname").value = config.hardware.doorname || "";
   document.getElementById("numrlys").value = numRelays;
@@ -255,16 +220,11 @@ function savehardware() {
   config.hardware.requirepincodeafterrfid = document.getElementById("requirepincodeafterrfid").checked;
   config.hardware.allowpincodeonly = document.getElementById("allowpincodeonly").checked;
   config.hardware.removeparitybits = document.getElementById("removeparitybits").checked;
-  config.hardware.sspin = parseInt(document.getElementById("gpioss").value);
-  config.hardware.rfidgain = parseInt(document.getElementById("gain").value);
   config.hardware.rtype = parseInt(document.getElementById("typerly").value);
   config.hardware.ltype = parseInt(document.getElementById("lockType").value);
   config.hardware.rpin = parseInt(document.getElementById("gpiorly").value);
   config.hardware.rtime = parseInt(document.getElementById("delay").value);
   config.hardware.wifipin = parseInt(document.getElementById("wifipin").value);
-  config.hardware.doorstatpin = parseInt(document.getElementById("doorstatpin").value);
-  config.hardware.maxOpenDoorTime = parseInt(document.getElementById("maxOpenDoorTime").value);
-  config.hardware.doorbellpin = parseInt(document.getElementById("doorbellpin").value);
   config.hardware.openlockpin = parseInt(document.getElementById("openlockpin").value);
   config.hardware.accessdeniedpin = parseInt(document.getElementById("accessdeniedpin").value);
   config.hardware.accessgrantedpin = parseInt(document.getElementById("accessgrantedpin").value);
@@ -292,21 +252,6 @@ function saventp() {
   uncommited();
 }
 
-function extractOpeningHours() {
-  // removing header row
-  var days = Array.from(document.getElementById("openinghours").getElementsByTagName("tr")).slice(1);
-  var openingHours = []
-  for(var d=0; d<7; d++) {
-    var hours = days[d].getElementsByTagName("input");
-    var dayFlags = "";
-    for(var h=0; h<24; h++) {
-      dayFlags += hours[h].checked ? "1" : "0";
-    }
-    openingHours.push(dayFlags);
-  }
-  return openingHours;
-}
-
 function savegeneral() {
   var a = document.getElementById("adminpwd").value;
   if (a === null || a === "") {
@@ -320,7 +265,6 @@ function savegeneral() {
   } else {
     config.general.restart = parseInt(document.getElementById("autorestart").value);
   }
-  config.general.openinghours = extractOpeningHours();
   uncommited();
 }
 
@@ -547,44 +491,6 @@ function listnetwork() {
 
 }
 
-function populateOpeningHours() {
-  var openingHours = Array(7);
-  for(var d=0; d<7; d++) {
-    openingHours[d] = "111111111111111111111111";
-  }
-  var table = document.getElementById("openinghours");
-  if (config.general.openinghours) {
-    openingHours = config.general.openinghours.map(function(day) { return day.split("") });
-  }
-
-  var firstRow = document.createElement("tr");
-  var spacerTh = document.createElement("th");
-  firstRow.appendChild(spacerTh);
-  for(hour = 0; hour<24; hour++) {
-    var th = document.createElement("th");
-    th.innerText = hour;
-    firstRow.appendChild(th);
-  }
-  table.appendChild(firstRow);
-  var weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-  for(var day=0; day<7; day++) {
-    var tr = document.createElement("tr");
-    var firstCol = document.createElement("td");
-    firstCol.innerHTML = "<b>" + weekDays[day] + "</b>";
-    tr.appendChild(firstCol);
-    for(var hour=0; hour<24; hour++) {
-      var td = document.createElement("td");
-      var checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = openingHours[day][hour] == 1;
-      td.appendChild(checkbox);
-      tr.appendChild(td);
-    }
-    table.appendChild(tr);
-  }
-}
-
 function listgeneral() {
   document.getElementById("adminpwd").value = config.general.pswd;
   document.getElementById("hostname").value = config.general.hostnm;
@@ -603,7 +509,6 @@ function listgeneral() {
       $("#autorestart-custom").addClass("hidden");
     }
   });
-  populateOpeningHours();
 }
 
 function listmqtt() {
@@ -661,33 +566,12 @@ function scanWifi() {
   }
 }
 
-function getUsers() {
-  sendWebsocketWithRetry("{\"command\":\"userlist\", \"page\":" + page + "}");
-}
-
 function getEvents() {
   sendWebsocketWithRetry("{\"command\":\"geteventlog\", \"page\":" + page + ", \"filename\":\"" + theCurrentLogFile +"\"}");
 }
 
 function isVisible(e) {
   return !!(e.offsetWidth || e.offsetHeight || e.getClientRects().length);
-}
-
-function listSCAN(obj) {
-  var elm = document.getElementById("usersbanner");
-  if (isVisible(elm)) {
-    if (obj.known === 1) {
-      $(".fooicon-remove").click();
-      document.querySelector("input.form-control[type=text]").value = obj.uid;
-      $(".fooicon-search").click();
-    } else {
-      $(".footable-add").click();
-      document.getElementById("uid").value = obj.uid;
-      document.getElementById("picctype").value = obj.type;
-      document.getElementById("username").value = obj.user;
-      document.getElementById("acctype").value = obj.acctype;
-    }
-  }
 }
 
 function getnextpage(mode) {
@@ -798,11 +682,6 @@ function getContent(contentname) {
           data = [];
           listlog();
           break;
-        case "#userscontent":
-          page = 1;
-          data = [];
-          getUsers();
-          break;
         case "#eventcontent":
           page = 1;
           data = [];
@@ -831,11 +710,6 @@ function backupuser() {
 
 function backupset() {
   saveLogfile(config,"downloadSet","esp-rfid-settings.json")
-}
-
-function piccBackup(obj) {
-  saveLogfile(obj,"downloadUser","esp-rfid-users.json")
-  backupstarted = false;
 }
 
 function restoreSet() {
@@ -888,41 +762,6 @@ function restore1by1(i, len, data) {
     slot = 0;
     recordstorestore = 0;
     document.getElementById("restoreclose").style.display = "block";
-  }
-}
-
-function restoreUser() {
-  var input = document.getElementById("restoreUser");
-  var reader = new FileReader();
-  if ("files" in input) {
-    if (input.files.length === 0) {
-      alert("You did not select any file to restore");
-    } else {
-      reader.onload = function() {
-        var json;
-        try {
-          json = JSON.parse(reader.result);
-        } catch (e) {
-          alert("Not a valid backup file");
-          return;
-        }
-        if (json.type === "esp-rfid-userbackup") {
-          var x = confirm("File seems to be valid, do you wish to continue?");
-          if (x) {
-            recordstorestore = json.list.length;
-            data = json.list;
-            restorestarted = true;
-            completed = false;
-            $("#restoremodal").modal({
-              backdrop: "static",
-              keyboard: false
-            });
-            restore1by1(slot, recordstorestore, data);
-          }
-        }
-      };
-      reader.readAsText(input.files[0]);
-    }
   }
 }
 
@@ -1223,240 +1062,6 @@ function initLatestLogTable() {
   });
 }
 
-function initUserTable() {
-  updateUserModalForm();
-  jQuery(function($) {
-    var $modal = $("#editor-modal"),
-      $editor = $("#editor"),
-      $editorTitle = $("#editor-title"),
-      ft = window.FooTable.init("#usertable", {
-        columns: [{
-            "name": "uid",
-            "title": "UID",
-            "type": "text",
-            "style": "font-family:monospace"
-          },
-          {
-            "name": "pincode",
-            "title": "Pin code",
-            "type": "text",
-            "visible": false
-          },
-          {
-            "name": "username",
-            "title": "User Name or Label"
-          },
-          {
-            "name": "acctype",
-            "title": "Access Door " + config.hardware.doorname || "1",
-            "breakpoints": "xs",
-            "parser": function(value) {
-              if (value === 1) {
-                return "Always";
-              } else if (value === 99) {
-                return "Admin";
-              } else if (value === 0) {
-                return "Disabled";
-              }
-              return value;
-            },
-          },
-          {
-            "name": "acctype2",
-            "title": "Access Door " + config.hardware.relay2?.doorname || "2",
-            "breakpoints": "xs",
-            "visible": false,
-            "parser": function(value) {
-              if (value === 1) {
-                return "Always";
-              } else if (value === 99) {
-                return "Admin";
-              } else if (value === 0) {
-                return "Disabled";
-              }
-              return value;
-            },
-          },
-          {
-            "name": "acctype3",
-            "title": "Access Door " + config.hardware.relay3?.doorname || "3",
-            "breakpoints": "xs",
-            "visible": false,
-            "parser": function(value) {
-              if (value === 1) {
-                return "Always";
-              } else if (value === 99) {
-                return "Admin";
-              } else if (value === 0) {
-                return "Disabled";
-              }
-              return value;
-            },
-          },
-          {
-            "name": "acctype4",
-            "title": "Access Door " + config.hardware.relay4?.doorname || "4",
-            "breakpoints": "xs",
-            "visible": false,
-            "parser": function(value) {
-              if (value === 1) {
-                return "Always";
-              } else if (value === 99) {
-                return "Admin";
-              } else if (value === 0) {
-                return "Disabled";
-              }
-              return value;
-            },
-          },
-          {
-            "name": "validsince",
-            "title": "Valid Since",
-            "breakpoints": "xs sm",
-            "parser": function(value) {
-              var comp = new Date();
-              var vuepoch;
-              if (value) {
-                value = Math.floor(value + ((comp.getTimezoneOffset() * 60) * -1));
-                vuepoch = new Date(value * 1000);
-              } else {
-                vuepoch = new Date(0);
-              }
-              var formatted = vuepoch.getFullYear() +
-                "-" + twoDigits(vuepoch.getMonth() + 1) +
-                "-" + twoDigits(vuepoch.getDate());
-              return formatted;
-            },
-          },
-          {
-            "name": "validuntil",
-            "title": "Valid Until",
-            "breakpoints": "xs sm",
-            "parser": function(value) {
-              var comp = new Date();
-              value = Math.floor(value + ((comp.getTimezoneOffset() * 60) * -1));
-              var vuepoch = new Date(value * 1000);
-              var formatted = vuepoch.getFullYear() +
-                "-" + twoDigits(vuepoch.getMonth() + 1) +
-                "-" + twoDigits(vuepoch.getDate());
-              return formatted;
-            }
-          }
-        ],
-        rows: data,
-        editing: {
-          showText: "<span class=\"fooicon fooicon-pencil\" aria-hidden=\"true\"></span> Edit Users",
-          addText: "New User",
-          addRow: function() {
-            $editor[0].reset();
-            $editorTitle.text("Add a new User");
-            $modal.modal("show");
-          },
-          editRow: function(row) {
-            var acctypefinder;
-            var values = row.val();
-
-            function giveAccType(xnum){
-              var xval;
-              if (xnum===1) xval = values.acctype;
-              if (xnum===2) xval = values.acctype2;
-              if (xnum===3) xval = values.acctype3;
-              if (xnum===4) xval = values.acctype4;
-              if (xval === "Always")  return 1;
-              if (xval === "Admin")  return 99;
-              if (xval === "Disabled") return 0;
-            }
-            $editor.find("#uid").val(values.uid);
-            $editor.find("#pincode").val(values.pincode);
-            $editor.find("#username").val(values.username);
-            $editor.find("#acctype").val(giveAccType(1));
-            $editor.find("#acctype2").val(giveAccType(2));
-            $editor.find("#acctype3").val(giveAccType(3));
-            $editor.find("#acctype4").val(giveAccType(4));
-            $editor.find("#validsince").val(values.validsince);
-            $editor.find("#validuntil").val(values.validuntil);
-            $modal.data("row", row);
-            $editorTitle.text("Edit User # " + values.username);
-            $modal.modal("show");
-          },
-          deleteRow: function(row) {
-            var uid = row.value.uid;
-            var username = row.value.username;
-            if (confirm("This will remove " + uid + " : " + username + " from database. Are you sure?")) {
-              var jsontosend = "{\"uid\":\"" + uid + "\",\"command\":\"remove\"}";
-              sendWebsocket(jsontosend);
-              row.delete();
-            }
-          }
-        },
-        paging: {
-          size: 10
-        },
-        components: {
-          filtering: window.FooTable.MyFiltering
-        }
-      }),
-      uid = 10001;
-    $editor.on("submit", function(e) {
-      if (this.checkValidity && !this.checkValidity()) {
-        return;
-      }
-      e.preventDefault();
-      var row = $modal.data("row"),
-        values = {
-          uid: $editor.find("#uid").val(),
-          pincode: $editor.find("#pincode").val(),
-          username: $editor.find("#username").val(),
-          acctype: parseInt($editor.find("#acctype").val()),
-          acctype2: parseInt($editor.find("#acctype2").val()),
-          acctype3: parseInt($editor.find("#acctype3").val()),
-          acctype4: parseInt($editor.find("#acctype4").val()),
-          validsince: (new Date($editor.find("#validsince").val()).getTime() / 1000),
-          validuntil: (new Date($editor.find("#validuntil").val()).getTime() / 1000)
-        };
-      if (row instanceof window.FooTable.Row) {
-        row.delete();
-        values.id = uid++;
-        ft.rows.add(values);
-      } else {
-        values.id = uid++;
-        ft.rows.add(values);
-      }
-      var datatosend = {};
-      datatosend.command = "userfile";
-      datatosend.uid = $editor.find("#uid").val();
-      datatosend.pincode = $editor.find("#pincode").val();
-      datatosend.user = $editor.find("#username").val();
-      datatosend.acctype = parseInt($editor.find("#acctype").val());
-      datatosend.acctype2 = parseInt($editor.find("#acctype2").val());
-      datatosend.acctype3 = parseInt($editor.find("#acctype3").val());
-      datatosend.acctype4 = parseInt($editor.find("#acctype4").val());
-      var validsince = $editor.find("#validsince").val();
-      var vsepoch = (new Date(validsince).getTime() / 1000);
-      datatosend.validsince = vsepoch;
-      var validuntil = $editor.find("#validuntil").val();
-      var vuepoch = (new Date(validuntil).getTime() / 1000);
-      datatosend.validuntil = vuepoch;
-      sendWebsocket(JSON.stringify(datatosend));
-      $modal.modal("hide");
-    });
-  });
-
-  ft = FooTable.get('#usertable');
-  for (var i=2; i<= maxNumRelays; i++)
-  {
-    if (i<= numRelays) 
-    {
-      ft.columns.get("acctype"+i).visible=true;
-    }
-    else
-    {
-      ft.columns.get("acctype"+i).visible=false;
-    }  
-    ft.draw();
-  }
-}
-
 function restartESP() {
   inProgress("restart");
 }
@@ -1468,19 +1073,6 @@ function socketMessageListener(evt) {
       case "status":
         ajaxobj = obj;
         getContent("#statuscontent");
-        break;
-      case "userlist":
-        haspages = obj.haspages;
-        if (haspages === 0) {
-          if (!backupstarted) {
-            document.getElementById("loading-img").style.display = "none";
-            initUserTable();
-            $(".footable-show").click();
-            $(".fooicon-remove").click();
-          }
-          break;
-        }
-        builddata(obj);
         break;
       case "eventlist":
         haspages = obj.haspages;
@@ -1522,9 +1114,6 @@ function socketMessageListener(evt) {
       case "configfile":
         config = obj;
         if (!('wifipin' in config.hardware)) config.hardware.wifipin = 255;
-        if (!('doorstatpin' in config.hardware)) config.hardware.doorstatpin = 255;
-        if (!('maxOpenDoorTime' in config.hardware)) config.hardware.maxOpenDoorTime = 0;
-        if (!('doorbellpin' in config.hardware)) config.hardware.doorbellpin = 255;
         if (!('accessdeniedpin' in config.hardware)) config.hardware.accessdeniedpin = 255;
         if (!('accessgrantedpin' in config.hardware)) config.hardware.accessgrantedpin = 255;
         if (!('openlockpin' in config.hardware)) config.hardware.openlockpin = 255;
@@ -1547,25 +1136,6 @@ function socketMessageListener(evt) {
           logdata = [];
           initLatestLogTable();
           document.getElementById("loading-img").style.display = "none";
-        }
-        break;
-      case "userlist":
-        if (page < haspages && obj.result === true) {
-          getnextpage("userlist");
-        } else if (page === haspages) {
-          if (!backupstarted) {
-            initUserTable();
-            document.getElementById("loading-img").style.display = "none";
-
-            $(".footable-show").click();
-            $(".fooicon-remove").click();
-          } else {
-            file.type = "esp-rfid-userbackup";
-            file.version = "v0.6";
-            file.list = data;
-            piccBackup(file);
-          }
-          break;
         }
         break;
       case "eventlist":
@@ -1811,9 +1381,6 @@ $("#mqtt").click(function() {
 $("#ntp").click(function() {
   getContent("#ntpcontent");
   return false;
-});
-$("#users").click(function() {
-  getContent("#userscontent");
 });
 $("#latestlog").click(function() {
   theCurrentLogFile="/latestlog.json";

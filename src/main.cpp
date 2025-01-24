@@ -101,9 +101,6 @@ bool doEnableWifi = false;
 bool formatreq = false;
 const char *httpUsername = "admin";
 unsigned long keyTimer = 0;
-uint8_t lastDoorbellState = 0;
-uint8_t lastDoorState = 0;
-uint8_t lastTamperState = 0;
 unsigned long nextbeat = 0;
 time_t epoch;
 time_t lastNTPepoch;
@@ -132,8 +129,6 @@ void remoteInvalidAccess(const char *newUsername, const char *newUid, const char
 #include "config.esp"
 #include "websocket.esp"
 #include "webserver.esp"
-#include "door.esp"
-#include "doorbell.esp"
 
 void ICACHE_FLASH_ATTR setup()
 {
@@ -221,8 +216,6 @@ void ICACHE_RAM_ATTR loop()
 	ledAccessDeniedOff();
 	ledAccessGrantedOff();
 	beeperBeep();
-	doorStatus();
-	doorbellStatus();
 
 	rfidLoop();
 
@@ -234,14 +227,12 @@ void ICACHE_RAM_ATTR loop()
 			{
 				if (digitalRead(config.relayPin[currentRelay]) == !config.relayType[currentRelay]) // currently OFF, need to switch ON
 				{
-					mqttPublishIo("lock" + String(currentRelay), "UNLOCKED");
 					ESPRFID_LOG_DEBUG("mili : %lu", millis());
 					ESPRFID_LOG_INFO("activating relay %d now", currentRelay);
 					digitalWrite(config.relayPin[currentRelay], config.relayType[currentRelay]);
 				}
 				else // currently ON, need to switch OFF
 				{
-					mqttPublishIo("lock" + String(currentRelay), "LOCKED");
 					ESPRFID_LOG_DEBUG("mili : %lu", millis());
 					ESPRFID_LOG_INFO("deactivating relay %d now\n", currentRelay);
 					digitalWrite(config.relayPin[currentRelay], !config.relayType[currentRelay]);
@@ -253,7 +244,6 @@ void ICACHE_RAM_ATTR loop()
 		{
 			if (activateRelay[currentRelay])
 			{
-				mqttPublishIo("lock" + String(currentRelay), "UNLOCKED");
 				ESPRFID_LOG_DEBUG("mili : %lu", millis());
 				ESPRFID_LOG_INFO("activating relay %d now", currentRelay);
 				digitalWrite(config.relayPin[currentRelay], config.relayType[currentRelay]);
@@ -263,7 +253,6 @@ void ICACHE_RAM_ATTR loop()
 			}
 			else if ((currentMillis - previousMillis >= config.activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
 			{
-				mqttPublishIo("lock" + String(currentRelay), "LOCKED");
 				ESPRFID_LOG_DEBUG("currentMillis=%lu previousMillis=%lu activateTime[%d]=%lu activateRelay[%d]=%u", currentMillis, previousMillis, currentRelay, config.activateTime[currentRelay], currentRelay, activateRelay[currentRelay]);
 				ESPRFID_LOG_DEBUG("mili : %lu", millis());
 				ESPRFID_LOG_INFO("deactivate relay after this");
