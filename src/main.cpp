@@ -60,15 +60,9 @@ RemoteDebug Debug;
 
 Config config;
 
-#include <MFRC522.h>
-#include "PN532.h"
 #include <Wiegand.h>
-#include "rfid125kHz.h"
 
-MFRC522 mfrc522 = MFRC522();
-PN532 pn532;
 WIEGAND wg;
-RFID_Reader RFIDr;
 
 // relay specific variables
 bool activateRelay[MAX_NUM_RELAYS] = {false, false, false, false};

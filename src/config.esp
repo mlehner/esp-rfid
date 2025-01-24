@@ -118,7 +118,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	int rfidss;
 	config.pinCodeRequested = false;
 	config.pinCodeOnly = false;
-	if (config.readertype == READER_WIEGAND || config.readertype == READER_WIEGAND_RDM6300)
+	if (config.readertype == READER_WIEGAND)
 	{
 		int wgd0pin = hardware["wgd0pin"];
 		int wgd1pin = hardware["wgd1pin"];
@@ -139,21 +139,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 			config.wiegandReadHex = hardware["useridstoragemode"] == "hexadecimal";
 		}
 		setupWiegandReader(wgd0pin, wgd1pin, config.removeParityBits); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
-	}
-	else if (config.readertype == READER_MFRC522 || config.readertype == READER_MFRC522_RDM6300)
-	{
-		rfidss = 15;
-		if (hardware.containsKey("sspin"))
-		{
-			rfidss = hardware["sspin"];
-		}
-		int rfidgain = hardware["rfidgain"];
-		setupMFRC522Reader(rfidss, rfidgain);
-	}
-	else if (config.readertype == READER_PN532 || config.readertype == READER_PN532_RDM6300)
-	{
-		rfidss = hardware["sspin"];
-		setupPN532Reader(rfidss);
 	}
 	if (network.containsKey("fallbackmode"))
 	{

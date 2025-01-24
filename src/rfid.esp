@@ -101,145 +101,15 @@ void wiegandRead()
 			root["doorip"] = WiFi.localIP().toString();
 			mqttPublishEvent(&root);
 
-#ifndef LOCAL_DATABASE
 			// always wait for keypad
 			// remote will reset state if pin is not required
 			rfidState = cardSwiped;
 			keyTimer = millis();
 			ledWaitingOn();
 			beeperPinWaiting();
-#else
-			File f = SPIFFS.open("/P/" + uid, "r");
-			// user exists, we should wait for pincode
-			if (f)
-			{
-				size_t size = f.size();
-				std::unique_ptr<char[]> buf(new char[size]);
-				f.readBytes(buf.get(), size);
-				f.close();
-				DynamicJsonDocument json(512);
-				auto error = deserializeJson(json, buf.get(), size);
-				if (error)
-				{
-					processingState = notValid;
-					ESPRFID_LOG_WARN("Failed to parse User Data");
-					return;
-				}
-				rfidState = cardSwiped;
-				if (config.pinCodeRequested)
-				{
-					if(json["pincode"] == "")
-					{
-						rfidState = pinCodeEntered;
-					} else
-					{
-						keyTimer = millis();
-						ledWaitingOn();
-					}
-				}
-			} else
-			{
-				rfidState = waitingRfid;
-				processingState = unknown;
-			}
-#endif
 		}
 	}
 }
-
-void mfrc522Read()
-{
-	if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial())
-	{
-		return;
-	}
-	mfrc522.PICC_HaltA();
-	cardReadCooldown = millis() + COOLDOWN_MILIS;
-
-	/*
-	 *  Convert RC522 UID into string
-	 *  esp-rfid v1 had a bug where the UID string may miss some '0's. To
-	 *  maintain compatibility, calculate incorrect UID here as well for
-	 *  later checking in case old users exist in the config.
-	 */
-	for (byte i = 0; i < mfrc522.uid.size; i++) 
-	{
-		uid+=(String(mfrc522.uid.uidByte[i] < 0x10 ? "0" : ""));
-		uid+=(String(mfrc522.uid.uidByte[i], HEX));
-		v1uid+=(String(mfrc522.uid.uidByte[i], HEX));
-	}
-	rfidState = cardSwiped;
-
-
-	MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
-	type = mfrc522.PICC_GetTypeName(piccType);
-
-	ESPRFID_LOG_INFO("PICC's UID: %s %s", uid.c_str(), type.c_str());
-}
-
-void pn532Read()
-{
-	bool found = false;
-	byte pnuid[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	eCardType e_CardType;
-	byte u8_UidLength = 0x00; // UID = 4 or 7 bytes
-	found = pn532.ReadPassiveTargetID(pnuid, &u8_UidLength, &e_CardType);
-	if (found && u8_UidLength >= 4)
-	{
-		for (uint8_t i = 0; i < u8_UidLength; i++)
-		{
-			uid += String(pnuid[i], HEX);
-			rfidState = cardSwiped;
-		}
-		ESPRFID_LOG_INFO("PICC's UID: %s", uid.c_str());
-		cardReadCooldown = millis() + COOLDOWN_MILIS;
-	}
-}
-
-
-/*
- *  Try first to read from RDM6300 hardware. If that received
- *  nothing, check the other configured reader.
- */
-void genericRead()
-{
-	/*
-	 *  Test RDM6300 125khz reader
-	 */
-	while (Serial.available() > 0)
-	{
-		RFIDr.rfidSerial(Serial.read());
-	}
-	if (RFIDr.Available())
-	{
-		uid = RFIDr.GetHexID();
-		type = RFIDr.GetTagType();
-		rfidState = cardSwiped;
-		cardReadCooldown = millis() + COOLDOWN_MILIS;
-		ESPRFID_LOG_INFO("PICC's UID: %s", uid.c_str());
-	}
-
-	/*
-	 *  If nothing read from the RDM6300, check the other hardware
-	 */
-	if (uid.length() == 0) {
-		if (config.readertype == READER_MFRC522_RDM6300)
-		{
-			mfrc522Read();
-		}
-
-		else if (config.readertype == READER_WIEGAND_RDM6300)
-		{
-			wiegandRead();
-		}
-
-		else if (config.readertype == READER_PN532_RDM6300)
-		{
-			pn532Read();
-		}
-	}
-}
-
 
 /*
  *  Main function to read RFID cards. This function will call the
@@ -257,29 +127,9 @@ void rfidRead()
 		return;
 	}
 
-	/*
-	 *  Call the appropriate function based on the configured
-	 *  hardware
-	 */
-	if (config.readertype == READER_MFRC522)
-	{
-		mfrc522Read();
-	}
-
-	else if (config.readertype == READER_WIEGAND)
+	if (config.readertype == READER_WIEGAND)
 	{
 		wiegandRead();
-	}
-
-	else if (config.readertype == READER_PN532)
-	{
-		pn532Read();
-	}
-
-	else if (config.readertype > READER_PN532)
-	{
-		// This is a combination of RDM6300 and one of the above
-		genericRead();
 	}
 }
 
@@ -356,146 +206,6 @@ void pinCodeRead()
 				currentInput = "";
 				keyTimer = 0;
 				cardReadCooldown = millis() + COOLDOWN_MILIS;
-			}
-		}
-	}
-}
-
-int weekdayFromMonday(int weekdayFromSunday) {
-	// we expect weeks starting from Sunday equals to 1
-	// we return week day starting from Monday equals to 0
-	return ( weekdayFromSunday + 5 ) % 7;
-}
-
-
-/*
- *  If we have successfully read an RFID card, check if access
- *  should be granted
- */
-void rfidProcess()
-{
-	if (rfidState == waitingRfid ||
-			(config.pinCodeRequested && rfidState == cardSwiped))
-	{
-		return;
-	}
-
-	/* Each user has a file named after the RFID UID */
-	File f = SPIFFS.open("/P/" + uid, "r");
-
-	/*
-	 *  If the file was not found then this is an unknown user, so no more
-	 *  processing to be done. However, for backwards compatibility we do a
-	 *  secondary check here to see if an old esp-rfid v1 uid exists and if
-	 *  so use that.
-	 */
-	if (!f)
-	{
-		/* Test to see if there was a uid in v1 format */
-		f = SPIFFS.open("/P/" + v1uid, "r");
-		if (!f)
-		{
-			processingState = unknown;
-			return;
-		}
-		uid = v1uid;
-		ESPRFID_LOG_INFO(" (found uid in v1 format: %s)", v1uid.c_str());
-	}
-
-	/*
-	 *  Read the user's settings
-	 */
-	size_t size = f.size();
-	std::unique_ptr<char[]> buf(new char[size]);
-	f.readBytes(buf.get(), size);
-	f.close();
-	DynamicJsonDocument json(512);
-	auto error = deserializeJson(json, buf.get(), size);
-
-	/*
-	 *  Corrupt user data file, so return invalid user
-	 */
-	if (error)
-	{
-		processingState = notValid;
-		ESPRFID_LOG_WARN("Failed to parse User Data");
-		return;
-	}
-
-	// if the pin code is wrong we deny access
-	// pinCode is equal to uid if we allow pin code only access
-	if(config.pinCodeRequested && pinCode != json["pincode"] && pinCode != uid && json["pincode"] != "")
-	{
-		processingState = wrongPincode;
-		ESPRFID_LOG_INFO("Wrong pin code");
-		return;
-	}
-
-	/*
-	 *  Get account type (for FIRST relay only) and username from user's data
-	 */
-	accountType = json["acctype"];
-	username = json["user"].as<String>();
-
-	ESPRFID_LOG_INFO(" = known PICC");
-	ESPRFID_LOG_INFO("User Name: '%s'", username == "undefined" ? uid.c_str() : username.c_str());
-
-	if (accountType == ACCESS_GRANTED)
-	{
-		/*
-		 *  Normal user - relay but no admin access
-		 */
-		unsigned long validSinceL = json["validsince"];
-		unsigned long validUntilL = json["validuntil"];
-		unsigned long nowL = epoch;
-		int hourTz = timeinfo.tm_hour;
-
-		if (validUntilL < nowL || validSinceL > nowL)
-		{
-			processingState = expired;
-		} else if (config.openingHours[weekdayFromMonday(weekday())][hourTz] != '1')
-		{
-			processingState = notValid;
-		} else
-		{
-			processingState = valid;
-		}
-	} else if (accountType == ACCESS_ADMIN)
-	{
-		/*
-		 *  Admin user - enable relay (with no time limits) and wifi
-		 */
-		doEnableWifi = true;
-		processingState = validAdmin;
-	} else {
-		/*
-		 *  User exists but does not have access
-		 */
-		processingState = notValid;
-	}
-
-	/*
-	 *  If user is valid and opening hour time is allowed, go through each relay
-	 *  in turn to see if it needs to be activated
-	 */
-	if (processingState == valid || processingState == validAdmin)
-	{
-		for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
-		{
-			// Get user data JSON access type entry for this relay
-			if (currentRelay == 0) {
-				accountTypes[currentRelay] = json["acctype"];
-			} else {
-				accountTypes[currentRelay] = json["acctype" + String(currentRelay + 1)];
-			}
-
-			// Enable activation if permissions are correct
-			activateRelay[currentRelay] = (accountTypes[currentRelay] == ACCESS_GRANTED);
-
-			// ...except Admin, which always activates everything
-			if (processingState == validAdmin)
-			{
-				activateRelay[currentRelay] = true;
 			}
 		}
 	}
@@ -641,9 +351,6 @@ void rfidLoop()
 	}
 
 	pinCodeRead();
-#ifdef LOCAL_DATABASE
-	rfidProcess();
-#endif
 
 	if ((keyTimer > 0 && millis() - keyTimer >= KEYBOARD_TIMEOUT_MILIS)) {
 		ESPRFID_LOG_DEBUG("keyTimer expired, setting processingState = timedOut");
@@ -654,82 +361,8 @@ void rfidLoop()
 	cleanRfidLoop();
 }
 
-#ifdef ESPRFID_DEBUG
-void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails()
-{
-	// Get the MFRC522 software version
-	byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
-	ESPRFID_DEBUG_PORT.print(F("[ INFO ] MFRC522 Version: 0x"));
-	ESPRFID_DEBUG_PORT.print(v, HEX);
-	if (v == 0x91)
-		ESPRFID_DEBUG_PORT.print(F(" = v1.0"));
-	else if (v == 0x92)
-		ESPRFID_DEBUG_PORT.print(F(" = v2.0"));
-	else if (v == 0x88)
-		ESPRFID_DEBUG_PORT.print(F(" = clone"));
-	else
-		ESPRFID_DEBUG_PORT.print(F(" (unknown)"));
-	ESPRFID_DEBUG_PORT.println("");
-	// When 0x00 or 0xFF is returned, communication probably failed
-	if ((v == 0x00) || (v == 0xFF))
-	{
-		ESPRFID_DEBUG_PORT.println(F("[ WARN ] Communication failure, check if MFRC522 properly connected"));
-	}
-}
-#endif
-
 void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1, bool removeParityBits)
 {
 	wg.begin(d0, d1, removeParityBits);
 	rfidState = waitingRfid;
-}
-
-void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain)
-{
-	SPI.begin();						 // MFRC522 Hardware uses SPI protocol
-	mfrc522.PCD_Init(rfidss, UINT8_MAX); // Initialize MFRC522 Hardware
-	// Set RFID Hardware Antenna Gain
-	// This may not work with some boards
-	mfrc522.PCD_SetAntennaGain(rfidgain);
-#ifdef ESPRFID_DEBUG
-	ESPRFID_DEBUG_PORT.printf("[ INFO ] RFID SS_PIN: %u and Gain Factor: %u", rfidss, rfidgain);
-	ESPRFID_DEBUG_PORT.println("");
-#endif
-#ifdef ESPRFID_DEBUG
-	ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
-#endif
-}
-
-void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss)
-{
-	// init controller
-	pn532.InitSoftwareSPI(14, 12, 13, rfidss, 0);
-	do
-	{ // pseudo loop (just used for aborting with break;)
-		// Reset the PN532
-		pn532.begin(); // delay > 400 ms
-		byte IC, VersionHi, VersionLo, Flags;
-		if (!pn532.GetFirmwareVersion(&IC, &VersionHi, &VersionLo, &Flags))
-			break;
-#ifdef ESPRFID_DEBUG
-		char Buf[80];
-		sprintf(Buf, "Chip: PN5%02X, Firmware version: %d.%d\r\n", IC, VersionHi, VersionLo);
-		Utils::Print(Buf);
-		sprintf(Buf, "Supports ISO 14443A:%s, ISO 14443B:%s, ISO 18092:%s\r\n", (Flags & 1) ? "Yes" : "No",
-				(Flags & 2) ? "Yes" : "No",
-				(Flags & 4) ? "Yes" : "No");
-		Utils::Print(Buf);
-#endif
-		// Set the max number of retry attempts to read from a card.
-		// This prevents us from waitingProcessing forever for a card, which is the default behaviour of the PN532.
-		if (!pn532.SetPassiveActivationRetries())
-		{
-			break;
-		}
-		// configure the PN532 to read RFID tags
-		if (!pn532.SamConfig())
-		{
-			break;
-		}
-	} while (false);
 }
