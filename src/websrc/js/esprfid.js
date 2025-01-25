@@ -20,7 +20,6 @@ var config = {
         "wmode": 1,
         "hide": 0,
         "pswd": "",
-        "offtime": 0,
         "dhcp": 1,
         "ip": "",
         "subnet": "",
@@ -371,7 +370,6 @@ function savenetwork() {
   config.network.pswd = document.getElementById("wifipass").value;
 
   config.network.fallbackmode = document.forms.fallbackmodeForm.fallbackmode.value;
-  config.network.offtime = parseInt(document.getElementById("disable_wifi_after_seconds").value);
   uncommited();
 }
 
@@ -487,7 +485,6 @@ function listnetwork() {
     handleSTA();
   }
   document.forms.fallbackmodeForm.fallbackmode.value = config.network.fallbackmode;
-  document.getElementById("disable_wifi_after_seconds").value = config.network.offtime;
 
 }
 

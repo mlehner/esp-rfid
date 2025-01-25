@@ -122,7 +122,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		config.fallbackMode = network["fallbackmode"] == 1;
 	}
 	config.autoRestartIntervalSeconds = general["restart"];
-	config.wifiTimeout = network["offtime"];
 	const char *bssidmac = network["bssid"];
 	if (strlen(bssidmac) > 0)
 		parseBytes(bssidmac, ':', config.bssid, 6, 16);
