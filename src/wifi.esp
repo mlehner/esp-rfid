@@ -87,8 +87,11 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode()
 bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte bssid[6])
 {
 	bool useBSSID = false;
+	WiFi.disconnect(true);
 	WiFi.mode(WIFI_STA);
 	WiFi.persistent(false);
+	WiFi.setAutoConnect(false);
+	WiFi.setAutoReconnect(false);
 
 	if (!config.dhcpEnabled)
 	{
