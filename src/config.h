@@ -2,9 +2,6 @@ struct Config {
     int relayPin[MAX_NUM_RELAYS];
     uint8_t accessdeniedpin = 255;
     uint8_t accessgrantedpin = 255;
-    bool accessPointMode = false;
-    IPAddress accessPointIp;
-    IPAddress accessPointSubnetIp;
     unsigned long activateTime[MAX_NUM_RELAYS];
     unsigned long autoRestartIntervalSeconds = 0;
     unsigned long beeperInterval = 0;
@@ -15,7 +12,6 @@ struct Config {
     bool dhcpEnabled = true;
     IPAddress dnsIp;
     char *doorName[MAX_NUM_RELAYS];
-    bool fallbackMode = false;
     IPAddress gatewayIp;
     char *httpPass = NULL;
     IPAddress ipAddress;
@@ -30,7 +26,6 @@ struct Config {
     int mqttPort;
     char *mqttTopic = NULL;
     char *mqttUser = NULL;
-    bool networkHidden = false;
     char *ntpServer = NULL;
 	int ntpInterval = 0;
     int numRelays = 1;
@@ -45,8 +40,6 @@ struct Config {
     IPAddress subnetIp;
     const char *ssid;
     char *tzInfo = (char *)"";
-    const char *wifiApIp = NULL;
-    const char *wifiApSubnet = NULL;
 	uint8_t wifipin = 255;
     const char *wifiPassword = NULL;
 };

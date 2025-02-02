@@ -117,10 +117,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		}
 		setupWiegandReader(wgd0pin, wgd1pin, config.removeParityBits); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
 	}
-	if (network.containsKey("fallbackmode"))
-	{
-		config.fallbackMode = network["fallbackmode"] == 1;
-	}
 	config.autoRestartIntervalSeconds = general["restart"];
 	const char *bssidmac = network["bssid"];
 	if (strlen(bssidmac) > 0)
@@ -197,16 +193,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	{
 		config.wifiPassword = strdup(network["pswd"]);
 	}
-	config.accessPointMode = network["wmode"] == 1;
-	if (network.containsKey("apip"))
-	{
-		config.wifiApIp = strdup(network["apip"]);
-	}
-	if (network.containsKey("apsubnet"))
-	{
-		config.wifiApSubnet = strdup(network["apsubnet"]);
-	}
-	config.networkHidden = network["hide"] == 1;
 	if (general.containsKey("pswd"))
 	{
 		config.httpPass = strdup(general["pswd"]);
@@ -228,27 +214,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	{
 		config.dnsIp.fromString(network["dns"].as<const char*>());
 	}
-
-	const char *apipch;
-	if (config.wifiApIp)
-	{
-		apipch = config.wifiApIp;
-	}
-	else
-	{
-		apipch = "192.168.4.1";
-	}
-	const char *apsubnetch;
-	if (config.wifiApSubnet)
-	{
-		apsubnetch = config.wifiApSubnet;
-	}
-	else
-	{
-		apsubnetch = "255.255.255.0";
-	}
-	config.accessPointIp.fromString(apipch);
-	config.accessPointSubnetIp.fromString(apsubnetch);
 
 	ws.setAuthentication("admin", config.httpPass);
 

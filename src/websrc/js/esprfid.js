@@ -17,17 +17,12 @@ var config = {
     "network": {
         "bssid": "",
         "ssid": "esp-rfid",
-        "wmode": 1,
-        "hide": 0,
         "pswd": "",
         "dhcp": 1,
         "ip": "",
         "subnet": "",
         "gateway": "",
         "dns": "",
-        "apip": "192.168.4.1",
-        "apsubnet": "255.255.255.0",
-        "fallbackmode": 0
     },
     "hardware": {
         "readertype": 1,
@@ -313,38 +308,17 @@ function checkOctects(input) {
 }
 
 function savenetwork() {
-  var wmode = 0;
   config.network.dhcp = 0;
-  config.network.hide = 0;
   if (document.getElementById("inputtohide").style.display === "none") {
     var b = document.getElementById("ssid");
     config.network.ssid = b.options[b.selectedIndex].value;
   } else {
     config.network.ssid = document.getElementById("inputtohide").value;
   }
-  if (document.getElementById("wmodeap").checked) {
-    wmode = 1;
-    config.network.bssid = "";
-    if (!checkOctects("ipaddress")) {
-      return;
-    }
-    if (!checkOctects("subnet")) {
-      return;
-    }
-    config.network.apip = document.getElementById("ipaddress").value;
-    config.network.apsubnet = document.getElementById("subnet").value;
-
-    if (parseInt(document.querySelector("input[name=\"hideapenable\"]:checked").value) === 1) {
-      config.network.hide = 1;
-    } else {
-      config.network.hide = 0;
-    }
-  } else {
-    config.network.bssid = document.getElementById("wifibssid").value;
-    if (parseInt(document.querySelector("input[name=\"dhcpenabled\"]:checked").value) === 1) {
+  config.network.bssid = document.getElementById("wifibssid").value;
+  if (parseInt(document.querySelector("input[name=\"dhcpenabled\"]:checked").value) === 1) {
       config.network.dhcp = 1;
-    } else {
-
+  } else {
       config.network.dhcp = 0;
 
       if (!checkOctects("ipaddress")) {
@@ -364,12 +338,9 @@ function savenetwork() {
       config.network.dns = document.getElementById("dnsadd").value;
       config.network.subnet = document.getElementById("subnet").value;
       config.network.gateway = document.getElementById("gateway").value;
-    }
   }
-  config.network.wmode = wmode;
   config.network.pswd = document.getElementById("wifipass").value;
 
-  config.network.fallbackmode = document.forms.fallbackmodeForm.fallbackmode.value;
   uncommited();
 }
 
@@ -426,22 +397,6 @@ function commit() {
   inProgress("commit");
 }
 
-function handleAP() {
-  document.getElementById("ipaddress").value = config.network.apip;
-  document.getElementById("subnet").value = config.network.apsubnet;
-  document.getElementById("hideap").style.display = "block";
-  document.getElementById("hideBSSID").style.display = "none";
-  document.getElementById("scanb").style.display = "none";
-  document.getElementById("ssid").style.display = "none";
-  document.getElementById("dhcp").style.display = "none";
-  $("#staticip1").slideDown();
-  $("#staticip1").show();
-  //document.getElementById("staticip1").style.display = "block";
-  $("#staticip2").slideUp();
-  //document.getElementById("staticip2").style.display = "none";
-  document.getElementById("inputtohide").style.display = "block";
-}
-
 function handleDHCP() {
   if (document.querySelector("input[name=\"dhcpenabled\"]:checked").value === "1") {
     $("#staticip2").slideUp();
@@ -457,8 +412,6 @@ function handleDHCP() {
 }
 
 function handleSTA() {
-  document.getElementById("hideap").style.display = "none";
-  document.getElementById("hideBSSID").style.display = "block";
   document.getElementById("scanb").style.display = "block";
   document.getElementById("dhcp").style.display = "block";
   if (config.network.dhcp === 0) {
@@ -471,21 +424,10 @@ function listnetwork() {
 
   document.getElementById("inputtohide").value = config.network.ssid;
   document.getElementById("wifipass").value = config.network.pswd;
-  if (config.network.wmode === 1) {
-    document.getElementById("wmodeap").checked = true;
-    if (config.network.hide === 1) {
-      $("input[name=\"hideapenable\"][value=\"1\"]").prop("checked", true);
-    }
-    handleAP();
-  } else {
-    document.getElementById("wmodesta").checked = true;
-    document.getElementById("wifibssid").value = config.network.bssid;
-    document.getElementById("dnsadd").value = config.network.dns;
-    document.getElementById("gateway").value = config.network.gateway;
-    handleSTA();
-  }
-  document.forms.fallbackmodeForm.fallbackmode.value = config.network.fallbackmode;
-
+  document.getElementById("wifibssid").value = config.network.bssid;
+  document.getElementById("dnsadd").value = config.network.dns;
+  document.getElementById("gateway").value = config.network.gateway;
+  handleSTA();
 }
 
 function listgeneral() {

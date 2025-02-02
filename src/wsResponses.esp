@@ -18,26 +18,14 @@ void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 	root["uptime"] = uptimeSeconds;
 	root["version"] = ESPRFID_VERSION;
 
-	if (config.accessPointMode)
-	{
-		wifi_get_ip_info(SOFTAP_IF, &info);
-		struct softap_config conf;
-		wifi_softap_get_config(&conf);
-		root["ssid"] = String(reinterpret_cast<char *>(conf.ssid));
-		root["dns"] = printIP(WiFi.softAPIP());
-		root["mac"] = WiFi.softAPmacAddress();
-	}
-	else
-	{
-		wifi_get_ip_info(STATION_IF, &info);
-		struct station_config conf;
-		wifi_station_get_config(&conf);
-		root["ssid"] = String(reinterpret_cast<char *>(conf.ssid));
-		root["dns"] = printIP(WiFi.dnsIP());
-		root["mac"] = WiFi.macAddress();
-		root["rssi"] = WiFi.RSSI();
-		root["bssid"] = WiFi.BSSIDstr();
-	}
+    wifi_get_ip_info(STATION_IF, &info);
+    struct station_config conf;
+    wifi_station_get_config(&conf);
+    root["ssid"] = String(reinterpret_cast<char *>(conf.ssid));
+    root["dns"] = printIP(WiFi.dnsIP());
+    root["mac"] = WiFi.macAddress();
+    root["rssi"] = WiFi.RSSI();
+    root["bssid"] = WiFi.BSSIDstr();
 
 	IPAddress ipaddr = IPAddress(info.ip.addr);
 	IPAddress gwaddr = IPAddress(info.gw.addr);

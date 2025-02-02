@@ -288,17 +288,6 @@ void ICACHE_RAM_ATTR loop()
 		wiFiUptimeMillis += deltaTime;
 	}
 
-	// don't try connecting to WiFi when waiting for pincode
-	if (doEnableWifi == true && keyTimer == 0)
-	{
-		if (!WiFi.isConnected())
-		{
-			enableWifi();
-			writeEvent("INFO", "wifi", "Enabling WiFi", "");
-			doEnableWifi = false;
-		}
-	}
-
 	if (config.mqttEnabled && mqttClient.connected())
 	{
 		if ((unsigned)epoch > nextbeat)

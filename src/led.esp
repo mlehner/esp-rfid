@@ -40,7 +40,7 @@ void ledWifiOff()
 // blink when not connected, on when connected
 void ledWifiStatus()
 {
-	if (config.wifipin != 255 && !config.accessPointMode)
+	if (config.wifipin != 255)
 	{
 		if (!WiFi.isConnected())
 		{

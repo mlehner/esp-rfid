@@ -536,17 +536,6 @@
     <h6 class="text-muted">Type your Wi-Fi Network's SSID or Scan for nerby Wireless Networks to join.</h6>
     <br>
     <div class="row form-group">
-        <label class="col-xs-3">Wi-Fi Mode<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="You can run your ESP in AP Mode or Client Mode. In client mode you will need to connect to an existing Wi-Fi network, in AP Mode ESP creates a Wi-Fi network itself."></i></label>
-        <div class="col-xs-9">
-            <form>
-                <label class="radio-inline">
-                    <input type="radio" value="1" name="wmode" id="wmodeap" onclick="handleAP();" checked>Access Point </label>
-                <label class="radio-inline">
-                    <input type="radio" value="0" name="wmode" id="wmodesta" onclick="handleSTA();">Client</label>
-            </form>
-        </div>
-    </div>
-    <div class="row form-group">
         <label class="col-xs-3">SSID<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Wi-Fi Network's Name"></i></label>
         <span class="col-xs-7 col-md-5">
                 <input class="form-control input-sm" id="inputtohide" type="text" name="ap_ssid">
@@ -556,29 +545,11 @@
                 <button id="scanb" type="button" class="btn btn-primary btn-xs" style="display:none;" onclick="scanWifi()">Scan</button>
               </span>
     </div>
-    <div class="row form-group" style="display:none" id="hideBSSID">
-        <label class="col-xs-3">BSSID<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="If you have two Wi-Fi networks with the same SSID you may want to choose the specific one by BSSID"></i></label>
-        <span class="col-xs-9 col-md-5">
-              <input id="wifibssid" class="form-control input-sm" type="text" name="ap_bssid">
-              </span>
-    </div>
     <div class="row form-group">
         <label class="col-xs-3">Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Wi-Fi Password"></i></label>
         <span class="col-xs-9 col-md-5">
               <input id="wifipass" class="form-control input-sm" name="ap_passwd" type="password">
               </span>
-    </div>
-    <br>
-    <div class="row form-group" id="hideap">
-        <label class="col-xs-3">Hide Network Name<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="You can choose to hide Wireless Network name, so your ESP does not broadcast SSID, keep in mind that people can still find your network if they are insist."></i></label>
-        <div class="col-xs-9">
-            <form>
-                <label class="radio-inline">
-                    <input type="radio" value="1" name="hideapenable">Yes</label>
-                <label class="radio-inline">
-                    <input type="radio" value="0" name="hideapenable" checked>No</label>
-            </form>
-        </div>
     </div>
     <br>
     <div class="row form-group" id="dhcp">
@@ -619,16 +590,6 @@
               <input id="gateway" class="form-control input-sm">
               </span>
         </div>
-    </div>
-    <div class="row form-group">    
-        <label class="col-xs-3">WIFI fallback mode<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Enable fallback mode when not discover WIFI"></i></label>
-        <div class="col-xs-9">
-            <form name="fallbackmodeForm">
-                <label class="radio-inline"><input type="radio" value="1" name="fallbackmode">Enabled</label>
-                <label class="radio-inline"><input type="radio" value="0" name="fallbackmode" checked>Disabled</label>
-            </form>
-        </div>
-        <br> 
     </div>
     <br>
     <div class="row form-group">
