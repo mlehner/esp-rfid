@@ -295,6 +295,7 @@ void ICACHE_RAM_ATTR loop()
 			nextbeat = (unsigned)epoch + config.mqttInterval;
 			ESPRFID_LOG_DEBUG("Nextbeat=%lu", nextbeat);
 		}
+
 		processMqttQueue();
 	}
 

@@ -422,12 +422,13 @@ void onMqttConnect(bool sessionPresent)
 
 void processMqttQueue()
 {
-	while (mqttMessageQueue != NULL)
-	{
-		MqttMessage *messageToProcess = mqttMessageQueue;
-		mqttMessageQueue = messageToProcess->nextMessage;
-		processMqttMessage(messageToProcess);
+	if (mqttMessageQueue == NULL) {
+		return;
 	}
+
+	MqttMessage *messageToProcess = mqttMessageQueue;
+	mqttMessageQueue = messageToProcess->nextMessage;
+	processMqttMessage(messageToProcess);
 }
 
 void setupMqtt()

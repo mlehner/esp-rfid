@@ -226,10 +226,12 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *c
 
 void processWsQueue()
 {
-	while (wsMessageQueue != NULL)
+	if (wsMessageQueue == NULL)
 	{
-		WsMessage *messageToProcess = wsMessageQueue;
-		wsMessageQueue = messageToProcess->nextMessage;
-		processWsMessage(messageToProcess);
+		return;
 	}
+
+	WsMessage *messageToProcess = wsMessageQueue;
+	wsMessageQueue = messageToProcess->nextMessage;
+	processWsMessage(messageToProcess);
 }
