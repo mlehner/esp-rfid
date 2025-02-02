@@ -25,6 +25,7 @@ void connectToMqtt()
 
 void disconnectMqtt()
 {
+	mqttReconnectTimer.detach();
 	if (!config.mqttEnabled || !mqttClient.connected()) {
 		return;
 	}
@@ -66,7 +67,7 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
 
 	if (WiFi.isConnected())
 	{
-		mqttReconnectTimer.once(60, connectToMqtt);
+		mqttReconnectTimer.once(RECONNECT_TIMEOUT_MQTT_SECONDS, connectToMqtt);
 	}
 }
 
@@ -406,6 +407,7 @@ void onMqttSubscribe(uint16_t packetId, uint8_t qos)
 void onMqttConnect(bool sessionPresent)
 {
 	ESPRFID_LOG_INFO("MQTT Connected session");
+	mqttReconnectTimer.detach();
 	if (sessionPresent == true)
 	{
 		ESPRFID_LOG_INFO("MQTT session Present: True");

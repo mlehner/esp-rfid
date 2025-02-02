@@ -8,6 +8,8 @@
 #define READER_WIEGAND_RDM6300 5
 #define READER_PN532_RDM6300 6
 
+#define RECONNECT_TIMEOUT_MQTT_SECONDS 5
+
 // timing constants
 
 #define COOLDOWN_MILIS 2000          // Milliseconds the RFID reader will be blocked between inputs

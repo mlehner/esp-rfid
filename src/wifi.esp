@@ -1,6 +1,7 @@
 void onWifiConnect(const WiFiEventStationModeConnected &event)
 {
 	ESPRFID_LOG_INFO("WiFi STA Connected");
+	// disable mqtt reconnect, we will tell it to connect when we get an IP
 	mqttReconnectTimer.detach();
 	ledWifiOff();
 }
@@ -12,7 +13,6 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 		return;
 	}
 	ESPRFID_LOG_INFO("WiFi STA Disconnected");
-	mqttReconnectTimer.detach();
 	disconnectMqtt();
 	ledWifiOff();
 }
