@@ -2,10 +2,6 @@ void onWifiConnect(const WiFiEventStationModeConnected &event)
 {
 	ESPRFID_LOG_INFO("WiFi STA Connected");
 	mqttReconnectTimer.detach();
-	if (!wifiReconnectTimer.active() && !config.fallbackMode)
-	{
-		wifiReconnectTimer.once(300, setEnableWifi);
-	}
 	ledWifiOff();
 }
 
@@ -18,17 +14,12 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 	ESPRFID_LOG_INFO("WiFi STA Disconnected");
 	mqttReconnectTimer.detach();
 	disconnectMqtt();
-	if (!wifiReconnectTimer.active() && !config.fallbackMode)
-	{
-		wifiReconnectTimer.once(300, setEnableWifi);
-	}
 	ledWifiOff();
 }
 
 void onWifiGotIP(const WiFiEventStationModeGotIP &event)
 {
 	ESPRFID_LOG_INFO("WiFi IP Connected: %s", WiFi.localIP().toString().c_str());
-	wifiReconnectTimer.detach();
 	ledWifiOn();
 	connectToMqtt();
 }
@@ -56,14 +47,14 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode()
 }
 
 // Try to connect Wi-Fi
-bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte bssid[6])
+void ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte bssid[6])
 {
 	bool useBSSID = false;
 	WiFi.disconnect(true);
 	WiFi.mode(WIFI_STA);
 	WiFi.persistent(false);
 	WiFi.setAutoConnect(false);
-	WiFi.setAutoReconnect(false);
+	WiFi.setAutoReconnect(true);
 
 	if (!config.dhcpEnabled)
 	{
@@ -85,49 +76,11 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 		ESPRFID_LOG_INFO("any BSSID");
 		WiFi.begin(ssid, password);
 	}
-	unsigned long now = millis();
-	uint8_t timeout = 15; // define when to time out in seconds
-	do
-	{
-		ledWifiStatus();
-		delay(500);
-#ifdef ESPRFID_DEBUG
-		if (!WiFi.isConnected())
-			ESPRFID_DEBUG_PORT.print(F("."));
-#endif
-		if (WiFi.isConnected())
-			break;
-	} while (millis() - now < timeout * 1000);
-
-	// We now out of the while loop, either time is out or we connected. check what happened
-	if (WiFi.isConnected())
-	{
-		String data = ssid;
-		data += " " + WiFi.localIP().toString();
-		writeEvent("INFO", "wifi", "WiFi is connected", data);
-		return true;
-	}
-	else
-	{
-		ESPRFID_LOG_WARN("Couldn't connect in time");
-		if (!config.fallbackMode)
-		{
-			wifiReconnectTimer.once(300, setEnableWifi);
-		}
-		return false;
-	}
-}
-
-void ICACHE_FLASH_ATTR disableWifi()
-{
-	wiFiUptimeMillis = 0;
-	WiFi.disconnect(true);
-	WiFi.softAPdisconnect(true);
-	ESPRFID_LOG_INFO("Turn wifi off.");
 }
 
 void ICACHE_FLASH_ATTR enableWifi()
 {
+	writeEvent("INFO", "wifi", "Enabling WiFi", "");
 	wiFiUptimeMillis = 0;
 	connectSTA(config.ssid, config.wifiPassword, config.bssid);
 }

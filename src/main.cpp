@@ -80,7 +80,6 @@ bool deactivateRelay[MAX_NUM_RELAYS] = {false, false, false, false};
 
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
-Ticker wifiReconnectTimer;
 Ticker wsMessageTicker;
 WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler, wifiOnStationModeGotIPHandler;
 Bounce openLockButton;
