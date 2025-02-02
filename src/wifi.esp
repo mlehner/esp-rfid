@@ -8,7 +8,7 @@ void onWifiConnect(const WiFiEventStationModeConnected &event)
 
 void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 {
-	if ( !WiFi.isConnected() )
+	if (WiFi.isConnected())
 	{
 		return;
 	}
