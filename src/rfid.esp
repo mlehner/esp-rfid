@@ -310,10 +310,6 @@ void rfidOutsideMessaging()
 
 void cleanRfidLoop()
 {
-	if (rfidState == waitingRfid)
-	{
-		delay(50);
-	}
 	// Keep an eye on timeout waitingProcessing for keypress
 	// Clear code and timer when timeout is reached
 	if (processingState != waitingProcessing)
