@@ -44,8 +44,6 @@ RemoteDebug Debug;
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
-#include <SPI.h>
-#include <ESP8266mDNS.h>
 #include <ArduinoJson.h>
 #include <FS.h>
 #include <ESPAsyncTCP.h>
