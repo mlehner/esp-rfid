@@ -129,7 +129,7 @@ void remoteInvalidAccess(const char *newUsername, const char *newUid, const char
 
 void ICACHE_FLASH_ATTR setup()
 {
-#ifdef ESPRFID_DEBUG
+#ifdef DEBUG_ESP_PORT
 	DEBUG_ESP_PORT.begin(115200);
 	DEBUG_ESP_PORT.println();
 
@@ -165,7 +165,7 @@ void ICACHE_FLASH_ATTR setup()
 		}
 		else
 		{
-#ifdef ESPRFID_DEBUG
+#ifdef DEBUG_ESP_PORT
 			DEBUG_ESP_PORT.println(F(" failed!"));
 			DEBUG_ESP_PORT.println(F("[ WARN ] Could not format filesystem!"));
 #endif
