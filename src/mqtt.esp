@@ -251,25 +251,44 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 		return;
 	}
 
-	MqttMessage* incomingMessage = new MqttMessage;
+	auto* incomingMessage = new MqttMessage;
 
-	if (mqttIncomingJson.containsKey("cmd")) {
-		strlcpy(incomingMessage->command, mqttIncomingJson["cmd"], sizeof(incomingMessage->command));
-	} else {
-		ESPRFID_LOG_INFO("No cmd key in MQTT message");
-		return;
+	{
+		auto cmd = mqttIncomingJson["cmd"].as<const char *>();
+		if (cmd != nullptr) {
+			strlcpy(incomingMessage->command, cmd, sizeof(incomingMessage->command));
+		} else {
+			ESPRFID_LOG_INFO("No cmd key in MQTT message");
+			return;
+		}
 	}
-	if (mqttIncomingJson.containsKey("uid")) {
-		strlcpy(incomingMessage->uid, mqttIncomingJson["uid"], sizeof(incomingMessage->uid));
+
+	{
+		auto uid = mqttIncomingJson["uid"].as<const char *>();
+		if (uid != nullptr) {
+			strlcpy(incomingMessage->uid, uid, sizeof(incomingMessage->uid));
+		}
 	}
-	if (mqttIncomingJson.containsKey("user")) {
-		strlcpy(incomingMessage->user, mqttIncomingJson["user"], sizeof(incomingMessage->user));
+
+	{
+		auto user = mqttIncomingJson["user"].as<const char*>();
+		if (user != nullptr) {
+			strlcpy(incomingMessage->user, user, sizeof(incomingMessage->user));
+		}
 	}
-	if (mqttIncomingJson.containsKey("door")) {
-		strlcpy(incomingMessage->door, mqttIncomingJson["door"], sizeof(incomingMessage->door));
+
+	{
+		auto door = mqttIncomingJson["door"].as<const char*>();
+		if (door != nullptr) {
+			strlcpy(incomingMessage->door, door, sizeof(incomingMessage->door));
+		}
 	}
-	if (mqttIncomingJson.containsKey("log_id")) {
-		strlcpy(incomingMessage->logId, mqttIncomingJson["log_id"], sizeof(incomingMessage->logId));
+
+	{
+		auto logId = mqttIncomingJson["log_id"].as<const char*>();
+		if (logId != nullptr) {
+			strlcpy(incomingMessage->logId, logId, sizeof(incomingMessage->logId));
+		}
 	}
 
 	strlcpy(incomingMessage->serializedMessage, mqttBuffer, sizeof(mqttBuffer));
