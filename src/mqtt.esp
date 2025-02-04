@@ -103,7 +103,8 @@ void mqttPublishBoot(time_t boot_time)
 	DynamicJsonDocument root(512);
 	root["type"] = "boot";
 	root["time"] = boot_time;
-	root["uptime"] = "0";
+	root["uptime"] = uptimeSeconds;
+	root["wifi_uptime"] = wiFiUptimeMillis / 1000;
 	root["ip"] = WiFi.localIP().toString();
 	root["hostname"] = config.deviceHostname;
 	root["reset_reason"] = ESP.getResetInfo();
@@ -118,7 +119,7 @@ void mqttPublishHeartbeat(time_t heartbeat, time_t uptime)
 	root["uptime"] = uptime;
 	root["ip"] = WiFi.localIP().toString();
 	root["hostname"] = config.deviceHostname;
-	root["wifi_uptime"] = wiFiUptimeMillis;
+	root["wifi_uptime"] = wiFiUptimeMillis / 1000;
 	root["wifi_rssi"] = WiFi.RSSI();
 	root["wifi_bssid"] = WiFi.BSSIDstr();
 	mqttPublishEvent(&root);
