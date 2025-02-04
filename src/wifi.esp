@@ -47,9 +47,12 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode()
 void ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte bssid[6])
 {
 	bool useBSSID = false;
-	WiFi.disconnect(true);
-	WiFi.mode(WIFI_STA);
+	WiFi.disconnect(true, true);
 	WiFi.persistent(false);
+	WiFi.setPhyMode(WIFI_PHY_MODE_11N);
+	WiFi.setSleepMode(WIFI_NONE_SLEEP);
+	WiFi.setOutputPower(17.5);
+	WiFi.mode(WIFI_STA);
 	WiFi.setAutoConnect(false);
 	WiFi.setAutoReconnect(true);
 
