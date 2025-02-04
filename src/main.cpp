@@ -177,7 +177,7 @@ void ICACHE_FLASH_ATTR setup()
 	setupMqtt();
 	setupWebServer();
 	setupWifi(configured);
-	writeEvent("INFO", "sys", "System setup completed, running", "");
+	writeEvent("INFO", "sys", "System setup completed, running", ESP.getResetInfo());
 
 #ifdef ESPRFID_DEBUG
 	// Initialize RemoteDebug

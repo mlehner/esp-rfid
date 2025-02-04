@@ -106,6 +106,7 @@ void mqttPublishBoot(time_t boot_time)
 	root["uptime"] = "0";
 	root["ip"] = WiFi.localIP().toString();
 	root["hostname"] = config.deviceHostname;
+	root["reset_reason"] = ESP.getResetInfo();
 	mqttPublishEvent(&root);
 }
 
