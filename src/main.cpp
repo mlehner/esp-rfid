@@ -280,9 +280,17 @@ void ICACHE_RAM_ATTR loop()
 		ESP.restart();
 	}
 
-	if (WiFi.isConnected())
-	{
+	if (WiFi.isConnected()) {
+		if (wiFiUptimeMillis == 0) {
+			writeEvent(LOG_TYPE_INFO, LOG_SRC_WIFI, F("WiFi Connected!"), "IP: " + WiFi.localIP().toString());
+		}
+
 		wiFiUptimeMillis += deltaTime;
+	} else {
+		if (wiFiUptimeMillis != 0) {
+			writeEvent(LOG_TYPE_INFO, LOG_SRC_WIFI, F("WiFi disconnected!"), "");
+			wiFiUptimeMillis = 0;
+		}
 	}
 
 	if (config.mqttEnabled && mqttClient.connected())

@@ -1,5 +1,10 @@
 void extern mqttPublishEvent(JsonDocument *root);
 
+#define LOG_TYPE_INFO F("INFO")
+
+#define LOG_SRC_WIFI F("wifi")
+#define LOG_SRC_SYS F("sys")
+
 void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String data)
 {
 	DynamicJsonDocument root(512);
