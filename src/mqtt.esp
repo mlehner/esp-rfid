@@ -2,6 +2,8 @@
 
 char mqttBuffer[MAX_MQTT_BUFFER];
 
+bool wasMqttConnected = false;
+
 struct MqttMessage {
 	char command[20] = "";
 	char uid[20] = "";
@@ -63,7 +65,12 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
 		reasonstr = "Unknown";
 		break;
 	}
-	writeEvent("WARN", "mqtt", "Disconnected from MQTT server", reasonstr);
+
+	if (wasMqttConnected) {
+        writeEvent("WARN", "mqtt", "Disconnected from MQTT server", reasonstr);
+	}
+
+	wasMqttConnected = false;
 
 	if (WiFi.isConnected())
 	{
@@ -429,6 +436,7 @@ void onMqttSubscribe(uint16_t packetId, uint8_t qos)
 void onMqttConnect(bool sessionPresent)
 {
 	ESPRFID_LOG_INFO("MQTT Connected session");
+	wasMqttConnected = true;
 	mqttReconnectTimer.detach();
 	if (sessionPresent == true)
 	{
