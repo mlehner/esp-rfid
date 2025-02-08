@@ -412,6 +412,7 @@ function handleDHCP() {
 }
 
 function handleSTA() {
+  document.getElementById("hideBSSID").style.display = "block";
   document.getElementById("scanb").style.display = "block";
   document.getElementById("dhcp").style.display = "block";
   if (config.network.dhcp === 0) {

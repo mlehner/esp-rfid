@@ -545,6 +545,12 @@
                 <button id="scanb" type="button" class="btn btn-primary btn-xs" style="display:none;" onclick="scanWifi()">Scan</button>
               </span>
     </div>
+    <div class="row form-group" style="display:none" id="hideBSSID">
+        <label class="col-xs-3">BSSID<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="If you have two Wi-Fi networks with the same SSID you may want to choose the specific one by BSSID"></i></label>
+        <span class="col-xs-9 col-md-5">
+              <input id="wifibssid" class="form-control input-sm" type="text" name="ap_bssid">
+              </span>
+    </div>
     <div class="row form-group">
         <label class="col-xs-3">Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Wi-Fi Password"></i></label>
         <span class="col-xs-9 col-md-5">
