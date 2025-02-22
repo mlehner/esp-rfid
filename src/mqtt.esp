@@ -122,6 +122,8 @@ void mqttPublishHeartbeat(time_t heartbeat, time_t uptime)
 {
 	DynamicJsonDocument root(512);
 	root["type"] = "heartbeat";
+	root["esp_free_heap"] = ESP.getFreeHeap();
+	root["esprfid_version"] = ESPRFID_VERSION;
 	root["time"] = heartbeat;
 	root["uptime"] = uptime;
 	root["ip"] = WiFi.localIP().toString();
@@ -129,6 +131,13 @@ void mqttPublishHeartbeat(time_t heartbeat, time_t uptime)
 	root["wifi_uptime"] = wiFiUptimeMillis / 1000;
 	root["wifi_rssi"] = WiFi.RSSI();
 	root["wifi_bssid"] = WiFi.BSSIDstr();
+
+	FSInfo fsinfo;
+	if (SPIFFS.info(fsinfo)) {
+		root["availspiffs"] = fsinfo.totalBytes - fsinfo.usedBytes;
+		root["spiffssize"] = fsinfo.totalBytes;
+	}
+
 	mqttPublishEvent(&root);
 }
 
